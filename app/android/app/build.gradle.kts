@@ -1,9 +1,34 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
+
+// Release signing comes from an out-of-band keystore, never committed:
+//  - CI passes credentials via env vars (verbatim, so special characters in
+//    passwords are never mangled by shell or .properties escaping).
+//  - Locally, create keystore.properties yourself (git-ignored) for signed builds.
+// Without credentials, release falls back to the debug keystore so
+// `flutter run --release` still works locally.
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties().apply {
+    if (keystorePropertiesFile.exists()) {
+        load(keystorePropertiesFile.inputStream())
+    }
+}
+
+fun signingCredential(envKey: String, propKey: String): String? =
+    System.getenv(envKey)?.takeIf { it.isNotEmpty() } ?: keystoreProperties.getProperty(propKey)
+
+val releaseStoreFile = signingCredential("ANDROID_KEYSTORE_FILE", "storeFile")
+val releaseStorePassword = signingCredential("ANDROID_KEYSTORE_PASSWORD", "storePassword")
+val releaseKeyAlias = signingCredential("ANDROID_KEY_ALIAS", "keyAlias")
+val releaseKeyPassword = signingCredential("ANDROID_KEY_PASSWORD", "keyPassword")
+val hasReleaseSigning = releaseStoreFile != null && releaseStorePassword != null &&
+    releaseKeyAlias != null && releaseKeyPassword != null
 
 android {
     namespace = "com.fxboard.fxboard"
@@ -20,21 +45,31 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.fxboard.fxboard"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        create("release") {
+            if (hasReleaseSigning) {
+                storeFile = rootProject.file(releaseStoreFile!!)
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (hasReleaseSigning) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }

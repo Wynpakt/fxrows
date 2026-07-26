@@ -1,0 +1,132 @@
+name: Android APK Release
+
+# Builds a signed Flutter release APK and publishes it to GitHub Releases
+# for Obtainium (https://github.com/ImranR98/Obtainium).
+#
+# Triggers:
+#   • push to main – when app/** or this workflow change
+#   • workflow_dispatch – build APK on demand
+#
+# Versioning (automatic):
+#   • versionName / Git tag: 0.1.<build> where build = run_number - ANDROID_VERSION_EPOCH
+#   • versionCode (internal): github.run_number — always increases, never resets
+#
+# Optional repo variables (Settings → Actions → Variables):
+#   ANDROID_VERSION_EPOCH – subtract from run_number for 0.1.x display (default 0)
+#   FXBOARD_AGG_URL – default aggregator URL baked into the APK via dart-define
+#
+# Required secrets for signing (stable Obtainium updates, keystore never committed):
+#   ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "app/**"
+      - ".github/workflows/android-apk.yml"
+
+concurrency:
+  group: android-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Compute Android version
+        working-directory: .
+        run: |
+          EPOCH="${{ vars.ANDROID_VERSION_EPOCH }}"
+          EPOCH="${EPOCH:-0}"
+          BUILD=$(( ${{ github.run_number }} - EPOCH ))
+          if [ "$BUILD" -lt 1 ]; then
+            echo "::error::ANDROID_VERSION_EPOCH ($EPOCH) must be less than workflow run_number (${{ github.run_number }})."
+            exit 1
+          fi
+          echo "ANDROID_VERSION_CODE=${{ github.run_number }}" >> "$GITHUB_ENV"
+          echo "ANDROID_VERSION_NAME=0.1.${BUILD}" >> "$GITHUB_ENV"
+          echo "APK_RELEASE_TAG=v0.1.${BUILD}" >> "$GITHUB_ENV"
+          echo "Release version 0.1.${BUILD} (versionCode ${{ github.run_number }}, epoch ${EPOCH})"
+
+      - name: Decode release keystore
+        working-directory: .
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "${ANDROID_KEYSTORE_BASE64}" ]; then
+            echo "::error::ANDROID_KEYSTORE_BASE64 secret is not set. Obtainium updates require a stable signature; see README."
+            exit 1
+          fi
+          echo "${ANDROID_KEYSTORE_BASE64}" | base64 -d > app/android/release.keystore
+          echo "Decoded release keystore from repo secrets"
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build release APK
+        env:
+          ANDROID_KEYSTORE_FILE: release.keystore
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          FXBOARD_AGG_URL: ${{ vars.FXBOARD_AGG_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${ANDROID_KEYSTORE_PASSWORD:-}" ] || [ -z "${ANDROID_KEY_ALIAS:-}" ] || [ -z "${ANDROID_KEY_PASSWORD:-}" ]; then
+            echo "::error::ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, and ANDROID_KEY_PASSWORD secrets are required."
+            exit 1
+          fi
+          DART_DEFINES=()
+          if [ -n "${FXBOARD_AGG_URL:-}" ]; then
+            DART_DEFINES+=(--dart-define=FXBOARD_AGG_URL="${FXBOARD_AGG_URL}")
+            echo "Baking FXBOARD_AGG_URL=${FXBOARD_AGG_URL}"
+          else
+            echo "FXBOARD_AGG_URL not set — APK default remains http://127.0.0.1:8787 (changeable in Settings)."
+          fi
+          flutter build apk --release \
+            --build-name="${ANDROID_VERSION_NAME}" \
+            --build-number="${ANDROID_VERSION_CODE}" \
+            "${DART_DEFINES[@]+"${DART_DEFINES[@]}"}"
+
+      - name: Prepare APK
+        working-directory: .
+        run: |
+          cp app/build/app/outputs/flutter-apk/app-release.apk fxboard.apk
+          ls -lh fxboard.apk
+
+      - name: Publish to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.APK_RELEASE_TAG }}
+          name: fxboard Android ${{ env.ANDROID_VERSION_NAME }}
+          body: |
+            Automated APK built on GitHub Actions from commit ${{ github.sha }}.
+
+            - Version: `${{ env.ANDROID_VERSION_NAME }}` (versionCode `${{ env.ANDROID_VERSION_CODE }}`)
+            - Built with Flutter (`flutter build apk --release`)
+            - Install via [Obtainium](https://github.com/ImranR98/Obtainium): `https://github.com/goddib/fxboard/releases/latest`
+            - Or download `fxboard.apk` below
+          files: fxboard.apk
+          prerelease: true
+          make_latest: true

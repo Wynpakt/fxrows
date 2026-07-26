@@ -5,7 +5,10 @@ import 'rates_provider.dart';
 
 class RatesRepository {
   RatesRepository({
-    this.aggBaseUrl = 'http://127.0.0.1:8787',
+    this.aggBaseUrl = const String.fromEnvironment(
+      'FXBOARD_AGG_URL',
+      defaultValue: 'http://127.0.0.1:8787',
+    ),
   });
 
   String aggBaseUrl;

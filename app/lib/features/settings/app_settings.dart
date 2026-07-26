@@ -19,7 +19,13 @@ class AppSettings {
   static const _kApiKey = 'exchangerate_api_key';
 
   static const defaultCurrencies = ['EUR', 'USD', 'GBP', 'GEL', 'CHF'];
-  static const defaultAggUrl = 'http://127.0.0.1:8787';
+
+  /// Overridable at build time via `--dart-define=FXBOARD_AGG_URL=…`
+  /// (CI release APKs). Local/dev default remains loopback.
+  static const defaultAggUrl = String.fromEnvironment(
+    'FXBOARD_AGG_URL',
+    defaultValue: 'http://127.0.0.1:8787',
+  );
 
   Future<void> _ensurePrefs() async {
     _prefs ??= await SharedPreferences.getInstance();
