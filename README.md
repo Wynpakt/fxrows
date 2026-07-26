@@ -23,11 +23,13 @@ simple expressions (`100+50`, `200-30`, `2*3+4`).
 ```
 fxboard/
   app/       Flutter client
-  server/    Node.js aggregation API
-  docs/      Data-source policy & self-host notes
+  server/    Node.js aggregation API (Docker/GHCR for prod)
+  docs/      Data-source policy, hosting & self-host notes
 ```
 
 ## Quick start — server
+
+Local (dev):
 
 ```bash
 cd server
@@ -36,8 +38,9 @@ npm start            # http://127.0.0.1:8787
 curl http://127.0.0.1:8787/v1/latest | head
 ```
 
-See [docs/self-host.md](docs/self-host.md).
-
+Production: Docker image via GitHub Actions → GHCR; VPS does
+`docker compose pull && up -d`. See [docs/HOSTING.md](docs/HOSTING.md) and
+[docs/self-host.md](docs/self-host.md).
 ## Quick start — app
 
 ```bash

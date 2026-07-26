@@ -1,0 +1,16 @@
+services:
+  server:
+    image: ghcr.io/goddib/fxboard-server:latest
+    restart: unless-stopped
+    ports:
+      # Point your reverse proxy at this port, or drop host ports
+      # and attach the service to a proxy network instead.
+      - "8787:8787"
+    volumes:
+      # Persistent ECB snapshot cache (not baked into the image).
+      - ./data:/app/data
+    environment:
+      PORT: "8787"
+
+# Reverse proxy / TLS (Caddy, Traefik, nginx) lives outside this Compose file.
+# The app listens on HTTP :8787; the proxy terminates HTTPS and routes by hostname.

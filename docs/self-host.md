@@ -1,5 +1,12 @@
 # Self-host the aggregation server
 
+## Production (recommended)
+
+Deploy via Docker/GHCR on a VPS — see [HOSTING.md](HOSTING.md).
+CI builds the image; the VPS only runs `docker compose pull && up -d`.
+
+## Local development
+
 Requirements: Node.js 20+.
 
 ```bash
@@ -18,14 +25,16 @@ Endpoints:
 
 On first start the server tries to fetch ECB rates and writes
 `server/data/latest.json`. Clients may send `If-None-Match` using the response
-`ETag`.
+`ETag`. The process also auto-refreshes at most hourly when the snapshot is
+stale, so a separate cron is not required for production Docker deploys.
 
 Point the Flutter app (Settings → fxboard server URL) at your instance, e.g.
 `http://192.168.1.10:8787` on a LAN, or your public HTTPS URL.
 
-### Cron (optional)
+### Cron (optional, bare Node only)
 
-ECB updates on TARGET business days around 16:00 CET. A daily job is enough:
+ECB updates on TARGET business days around 16:00 CET. A daily job is enough
+if you run without Docker and without relying on the in-process refresh:
 
 ```cron
 5 17 * * 1-5 cd /path/to/fxboard/server && node src/ingest.js
