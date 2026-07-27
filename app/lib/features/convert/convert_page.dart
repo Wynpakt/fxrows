@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'convert_controller.dart';
+import 'currency_flag.dart';
 
 class ConvertPage extends StatefulWidget {
   const ConvertPage({super.key, required this.controller});
@@ -60,7 +61,23 @@ class _ConvertPageState extends State<ConvertPage> {
   }
 
   FocusNode _ensureFocus(String code) {
-    return _focus.putIfAbsent(code, FocusNode.new);
+    return _focus.putIfAbsent(code, () {
+      final node = FocusNode();
+      node.addListener(() {
+        if (!node.hasFocus) return;
+        if (c.editingCode != code) c.setEditing(code);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!node.hasFocus) return;
+          final field = _fields[code];
+          if (field == null || field.text.isEmpty) return;
+          field.selection = TextSelection(
+            baseOffset: 0,
+            extentOffset: field.text.length,
+          );
+        });
+      });
+      return node;
+    });
   }
 
   Future<void> _pickCurrency() async {
@@ -70,12 +87,7 @@ class _ConvertPageState extends State<ConvertPage> {
         .where((k) => !c.currencies.contains(k))
         .toList()
       ..sort();
-    if (available.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No more currencies from this source')),
-      );
-      return;
-    }
+
     final chosen = await showDialog<String>(
       context: context,
       builder: (ctx) {
@@ -101,16 +113,30 @@ class _ConvertPageState extends State<ConvertPage> {
                     ),
                     const SizedBox(height: 8),
                     Expanded(
-                      child: ListView.builder(
-                        itemCount: filtered.length,
-                        itemBuilder: (_, i) {
-                          final code = filtered[i];
-                          return ListTile(
-                            title: Text(code),
-                            onTap: () => Navigator.pop(ctx, code),
-                          );
-                        },
-                      ),
+                      child: filtered.isEmpty
+                          ? Center(
+                              child: Text(
+                                available.isEmpty
+                                    ? 'No more currencies from this source.\nAdd a custom rate instead.'
+                                    : 'No matches',
+                                textAlign: TextAlign.center,
+                                style: Theme.of(ctx).textTheme.bodyMedium,
+                              ),
+                            )
+                          : ListView.builder(
+                              itemCount: filtered.length,
+                              itemBuilder: (_, i) {
+                                final code = filtered[i];
+                                final custom = c.isCustom(code);
+                                return ListTile(
+                                  title: Text(currencyLabel(code)),
+                                  subtitle: custom
+                                      ? const Text('Custom rate')
+                                      : null,
+                                  onTap: () => Navigator.pop(ctx, code),
+                                );
+                              },
+                            ),
                     ),
                   ],
                 ),
@@ -120,6 +146,13 @@ class _ConvertPageState extends State<ConvertPage> {
                   onPressed: () => Navigator.pop(ctx),
                   child: const Text('Cancel'),
                 ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    _addCustomCurrency();
+                  },
+                  child: const Text('Custom…'),
+                ),
               ],
             );
           },
@@ -127,6 +160,85 @@ class _ConvertPageState extends State<ConvertPage> {
       },
     );
     if (chosen != null) c.addCurrency(chosen);
+  }
+
+  Future<void> _addCustomCurrency({String? existingCode}) async {
+    final codeCtrl = TextEditingController(text: existingCode ?? '');
+    final rateCtrl = TextEditingController(
+      text: existingCode != null
+          ? (c.customRates[existingCode]?.toString() ?? '')
+          : '',
+    );
+    final base = c.snapshot?.base ?? 'EUR';
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: Text(existingCode == null ? 'Custom currency' : 'Edit rate'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: codeCtrl,
+                enabled: existingCode == null,
+                textCapitalization: TextCapitalization.characters,
+                decoration: const InputDecoration(
+                  labelText: 'Code',
+                  hintText: 'e.g. BTC or POINTS',
+                  border: OutlineInputBorder(),
+                ),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z]')),
+                  LengthLimitingTextInputFormatter(8),
+                ],
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: rateCtrl,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: InputDecoration(
+                  labelText: 'Units per 1 $base',
+                  helperText:
+                      'How many units of this currency equal one $base',
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+    if (ok != true || !mounted) return;
+    final rate = double.tryParse(rateCtrl.text.trim().replaceAll(',', '.'));
+    try {
+      await c.addCustomCurrency(codeCtrl.text, rate ?? 0);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Saved ${codeCtrl.text.toUpperCase()}')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('$e')),
+        );
+      }
+    } finally {
+      codeCtrl.dispose();
+      rateCtrl.dispose();
+    }
   }
 
   @override
@@ -181,6 +293,7 @@ class _ConvertPageState extends State<ConvertPage> {
                 final code = c.currencies[index];
                 final field = _ensureField(code);
                 final focus = _ensureFocus(code);
+                final flag = currencyFlag(code);
                 return Card(
                   elevation: 0,
                   color: theme.colorScheme.surfaceContainerHighest.withValues(
@@ -194,12 +307,23 @@ class _ConvertPageState extends State<ConvertPage> {
                     child: Row(
                       children: [
                         SizedBox(
-                          width: 64,
-                          child: Text(
-                            code,
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
+                          width: 88,
+                          child: Row(
+                            children: [
+                              if (flag.isNotEmpty) ...[
+                                Text(flag, style: const TextStyle(fontSize: 22)),
+                                const SizedBox(width: 6),
+                              ],
+                              Flexible(
+                                child: Text(
+                                  code,
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         Expanded(
@@ -220,7 +344,13 @@ class _ConvertPageState extends State<ConvertPage> {
                               hintText: '0 · or 100+50',
                             ),
                             style: theme.textTheme.headlineSmall,
-                            onTap: () => c.setEditing(code),
+                            onTap: () {
+                              if (c.editingCode != code) c.setEditing(code);
+                              field.selection = TextSelection(
+                                baseOffset: 0,
+                                extentOffset: field.text.length,
+                              );
+                            },
                             onChanged: (raw) => c.liveAmount(code, raw),
                             onEditingComplete: () {
                               c.commitAmount(code, field.text);
@@ -233,6 +363,12 @@ class _ConvertPageState extends State<ConvertPage> {
                             },
                           ),
                         ),
+                        if (c.isCustom(code))
+                          IconButton(
+                            tooltip: 'Edit custom rate',
+                            onPressed: () => _addCustomCurrency(existingCode: code),
+                            icon: const Icon(Icons.edit_outlined),
+                          ),
                         if (c.currencies.length > 2)
                           IconButton(
                             tooltip: 'Remove',

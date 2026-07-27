@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fxboard/data/rates/rate_snapshot.dart';
+import 'package:fxboard/features/convert/currency_flag.dart';
 import 'package:fxboard/features/convert/expression.dart';
 
 void main() {
@@ -46,6 +47,30 @@ void main() {
     test('USD to GBP via cross', () {
       final usdToGbp = snap.convert(amount: 100, from: 'USD', to: 'GBP');
       expect(usdToGbp, closeTo(100 * 0.8539 / 1.1377, 0.001));
+    });
+
+    test('mergedWith adds custom rates', () {
+      final merged = snap.mergedWith({'BTC': 0.000012});
+      expect(merged.rates.containsKey('BTC'), isTrue);
+      expect(
+        merged.convert(amount: 1, from: 'EUR', to: 'BTC'),
+        closeTo(0.000012, 1e-12),
+      );
+      // Original unchanged
+      expect(snap.rates.containsKey('BTC'), isFalse);
+    });
+  });
+
+  group('currencyFlag', () {
+    test('known codes', () {
+      expect(currencyFlag('EUR'), '🇪🇺');
+      expect(currencyFlag('usd'), '🇺🇸');
+      expect(currencyFlag('GEL'), '🇬🇪');
+    });
+
+    test('unknown is empty', () {
+      expect(currencyFlag('ZZZ'), '');
+      expect(currencyLabel('ZZZ'), 'ZZZ');
     });
   });
 }

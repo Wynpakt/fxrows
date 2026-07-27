@@ -16,6 +16,7 @@ simple expressions (`100+50`, `200-30`, `2*3+4`).
 - **Optional BYO key:** ExchangeRate-API from the device only (wider set / own quota)
 - **Multi-currency grid** with pivot sync
 - **Inline calculator** in amount fields
+- **Flags** next to currency codes; optional **custom currencies** with manual rates
 - Platforms: Android, iOS, Linux, macOS, Windows (Web out of scope)
 
 ## Repository layout

@@ -17,6 +17,7 @@ class ConvertController extends ChangeNotifier {
   final AppSettings _settings;
 
   RateSnapshot? snapshot;
+  Map<String, double> customRates = {};
   List<String> currencies = List.of(AppSettings.defaultCurrencies);
   final Map<String, double> amounts = {};
   String? editingCode;
@@ -25,10 +26,13 @@ class ConvertController extends ChangeNotifier {
   bool loading = false;
   RatesProviderId providerId = RatesProviderId.aggServer;
 
+  bool isCustom(String code) => customRates.containsKey(code.toUpperCase());
+
   Future<void> init() async {
     currencies = await _settings.visibleCurrencies();
     providerId = await _settings.providerId();
     _repository.aggBaseUrl = await _settings.aggBaseUrl();
+    customRates = await _settings.customRates();
     for (final c in currencies) {
       amounts.putIfAbsent(c, () => c == currencies.first ? 100 : 0);
     }
@@ -42,36 +46,41 @@ class ConvertController extends ChangeNotifier {
     try {
       providerId = await _settings.providerId();
       _repository.aggBaseUrl = await _settings.aggBaseUrl();
+      customRates = await _settings.customRates();
       final key = await _settings.exchangeRateApiKey();
       final next = await _repository.fetch(
         providerId: providerId,
         exchangeRateApiKey: key,
       );
-      snapshot = next;
-      // Drop currencies the provider does not know; keep order for known ones.
+      final merged = next.mergedWith(customRates);
+      snapshot = merged;
+      // Keep provider currencies and user-defined customs; preserve order.
       currencies = [
         for (final c in currencies)
-          if (next.rates.containsKey(c)) c,
+          if (merged.rates.containsKey(c)) c,
       ];
       if (currencies.isEmpty) {
         currencies = [
           for (final c in AppSettings.defaultCurrencies)
-            if (next.rates.containsKey(c)) c,
+            if (merged.rates.containsKey(c)) c,
         ];
         if (currencies.isEmpty) {
-          currencies = next.rates.keys.take(5).toList();
+          currencies = merged.rates.keys.take(5).toList();
         }
       }
       final pivot = currencies.first;
       final pivotAmount = amounts[pivot] ?? 100;
       _recomputeFrom(pivot, pivotAmount);
+      final customNote =
+          customRates.isEmpty ? '' : ' · ${customRates.length} custom';
       statusMessage =
-          '${next.source} · as of ${next.asOf} · ${next.rates.length} currencies';
+          '${next.source} · as of ${next.asOf} · ${merged.rates.length} currencies$customNote';
     } catch (e) {
       errorMessage = e.toString();
-      // Keep UI usable with last snapshot or dummy.
-      snapshot ??= RateSnapshot.dummy();
-      if (amounts.values.every((v) => v == 0)) {
+      // Keep UI usable with last snapshot or dummy + customs.
+      customRates = await _settings.customRates();
+      snapshot ??= RateSnapshot.dummy().mergedWith(customRates);
+      if (amounts.values.every((v) => v == 0) && currencies.isNotEmpty) {
         _recomputeFrom(currencies.first, 100);
       }
     } finally {
@@ -94,6 +103,64 @@ class ConvertController extends ChangeNotifier {
     );
     _settings.setVisibleCurrencies(currencies);
     notifyListeners();
+  }
+
+  /// Persist a manual rate (units of [code] per 1 snapshot base) and show it.
+  Future<void> addCustomCurrency(String code, double ratePerBase) async {
+    final c = code.toUpperCase().trim();
+    if (!RegExp(r'^[A-Z]{3,8}$').hasMatch(c)) {
+      throw ArgumentError('Currency code must be 3–8 letters');
+    }
+    if (ratePerBase <= 0) {
+      throw ArgumentError('Rate must be positive');
+    }
+    await _settings.upsertCustomRate(c, ratePerBase);
+    customRates = await _settings.customRates();
+    final base = snapshot;
+    if (base != null) {
+      snapshot = RateSnapshot(
+        base: base.base,
+        asOf: base.asOf,
+        fetchedAt: base.fetchedAt,
+        source: base.source,
+        attribution: base.attribution,
+        disclaimer: base.disclaimer,
+        rates: {...base.rates, ...customRates},
+      );
+    } else {
+      snapshot = RateSnapshot.dummy().mergedWith(customRates);
+    }
+    if (!currencies.contains(c)) {
+      currencies = [...currencies, c];
+      final snap = snapshot!;
+      final pivot = currencies.first;
+      amounts[c] = snap.convert(
+        amount: amounts[pivot] ?? 0,
+        from: pivot,
+        to: c,
+      );
+      await _settings.setVisibleCurrencies(currencies);
+    } else {
+      final pivot = currencies.first;
+      _recomputeFrom(pivot, amounts[pivot] ?? 0);
+    }
+    notifyListeners();
+  }
+
+  Future<void> updateCustomRate(String code, double ratePerBase) async {
+    await addCustomCurrency(code, ratePerBase);
+  }
+
+  Future<void> deleteCustomCurrency(String code) async {
+    final c = code.toUpperCase();
+    await _settings.removeCustomRate(c);
+    customRates = await _settings.customRates();
+    if (currencies.contains(c) && currencies.length > 2) {
+      currencies = [for (final x in currencies) if (x != c) x];
+      amounts.remove(c);
+      await _settings.setVisibleCurrencies(currencies);
+    }
+    await refreshRates();
   }
 
   void removeCurrency(String code) {

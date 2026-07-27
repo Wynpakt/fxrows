@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../data/rates/rates_provider.dart';
+import '../convert/currency_flag.dart';
 import 'app_settings.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -21,6 +23,7 @@ class _SettingsPageState extends State<SettingsPage> {
   RatesProviderId _provider = RatesProviderId.aggServer;
   final _aggUrl = TextEditingController();
   final _apiKey = TextEditingController();
+  Map<String, double> _customRates = {};
   bool _loading = true;
   bool _obscure = true;
 
@@ -34,10 +37,12 @@ class _SettingsPageState extends State<SettingsPage> {
     final provider = await widget.settings.providerId();
     final url = await widget.settings.aggBaseUrl();
     final key = await widget.settings.exchangeRateApiKey();
+    final custom = await widget.settings.customRates();
     setState(() {
       _provider = provider;
       _aggUrl.text = url;
       _apiKey.text = key ?? '';
+      _customRates = custom;
       _loading = false;
     });
   }
@@ -55,8 +60,6 @@ class _SettingsPageState extends State<SettingsPage> {
     await widget.settings.setExchangeRateApiKey(
       _provider == RatesProviderId.exchangeRateApi ? _apiKey.text : null,
     );
-    // Keep key if user switches back later — actually plan says store key locally.
-    // Always persist key when non-empty so switching providers is painless.
     if (_apiKey.text.trim().isNotEmpty) {
       await widget.settings.setExchangeRateApiKey(_apiKey.text);
     }
@@ -69,6 +72,86 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+  Future<void> _editCustom({String? existingCode}) async {
+    final codeCtrl = TextEditingController(text: existingCode ?? '');
+    final rateCtrl = TextEditingController(
+      text: existingCode != null
+          ? (_customRates[existingCode]?.toString() ?? '')
+          : '',
+    );
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(existingCode == null ? 'Add custom currency' : 'Edit rate'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: codeCtrl,
+              enabled: existingCode == null,
+              textCapitalization: TextCapitalization.characters,
+              decoration: const InputDecoration(
+                labelText: 'Code',
+                border: OutlineInputBorder(),
+              ),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z]')),
+                LengthLimitingTextInputFormatter(8),
+              ],
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: rateCtrl,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                labelText: 'Units per 1 base (usually EUR)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) {
+      codeCtrl.dispose();
+      rateCtrl.dispose();
+      return;
+    }
+    final code = codeCtrl.text.trim().toUpperCase();
+    final rate = double.tryParse(rateCtrl.text.trim().replaceAll(',', '.'));
+    codeCtrl.dispose();
+    rateCtrl.dispose();
+    if (!RegExp(r'^[A-Z]{3,8}$').hasMatch(code) || rate == null || rate <= 0) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Need a 3–8 letter code and positive rate')),
+        );
+      }
+      return;
+    }
+    await widget.settings.upsertCustomRate(code, rate);
+    final next = await widget.settings.customRates();
+    setState(() => _customRates = next);
+    widget.onChanged();
+  }
+
+  Future<void> _deleteCustom(String code) async {
+    await widget.settings.removeCustomRate(code);
+    final next = await widget.settings.customRates();
+    setState(() => _customRates = next);
+    widget.onChanged();
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) {
@@ -76,6 +159,7 @@ class _SettingsPageState extends State<SettingsPage> {
         body: Center(child: CircularProgressIndicator()),
       );
     }
+    final customCodes = _customRates.keys.toList()..sort();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
@@ -125,6 +209,58 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ),
           ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Custom currencies',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+              TextButton.icon(
+                onPressed: () => _editCustom(),
+                icon: const Icon(Icons.add),
+                label: const Text('Add'),
+              ),
+            ],
+          ),
+          Text(
+            'Self-maintained rates as units per 1 provider base (usually EUR). '
+            'They merge with live rates and stay on this device.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 8),
+          if (customCodes.isEmpty)
+            Text(
+              'None yet — use Add or the convert screen’s Custom… button.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+            )
+          else
+            ...customCodes.map(
+              (code) => ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(currencyLabel(code)),
+                subtitle: Text('${_customRates[code]} per base'),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      tooltip: 'Edit',
+                      onPressed: () => _editCustom(existingCode: code),
+                      icon: const Icon(Icons.edit_outlined),
+                    ),
+                    IconButton(
+                      tooltip: 'Delete',
+                      onPressed: () => _deleteCustom(code),
+                      icon: const Icon(Icons.delete_outline),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           const SizedBox(height: 24),
           Text(
             'Default path uses ECB reference rates via your self-hosted '

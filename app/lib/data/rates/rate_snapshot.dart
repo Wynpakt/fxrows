@@ -22,6 +22,20 @@ class RateSnapshot {
 
   Iterable<String> get currencies => rates.keys;
 
+  /// Returns a copy with [extra] rates merged in (extra wins on key clash).
+  RateSnapshot mergedWith(Map<String, double> extra) {
+    if (extra.isEmpty) return this;
+    return RateSnapshot(
+      base: base,
+      asOf: asOf,
+      fetchedAt: fetchedAt,
+      source: source,
+      attribution: attribution,
+      disclaimer: disclaimer,
+      rates: {...rates, ...extra},
+    );
+  }
+
   double rateOf(String code) {
     final v = rates[code];
     if (v == null || v <= 0) {
