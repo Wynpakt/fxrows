@@ -61,9 +61,11 @@ signed release APK and publish it to
 [GitHub Releases](https://github.com/goddib/fxboard/releases/latest) so
 [Obtainium](https://github.com/ImranR98/Obtainium) can detect updates.
 
-- **Obtainium:** add `https://github.com/goddib/fxboard/releases/latest` as a
-  GitHub source
-- **Manual:** Actions → **Android APK Release** → Run workflow
+- **Quick add (phone with Obtainium installed):**
+  [Add fxboard to Obtainium](https://apps.obtainium.imranr.dev/redirect.html?r=obtainium://app/%7B%22id%22%3A%22com.fxboard.fxboard%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2Fgoddib%2Ffxboard%22%2C%22author%22%3A%22goddib%22%2C%22name%22%3A%22fxboard%22%2C%22preferredApkIndex%22%3A0%2C%22additionalSettings%22%3A%22%7B%5C%22includePrereleases%5C%22%3Atrue%2C%5C%22fallbackToOlderReleases%5C%22%3Atrue%2C%5C%22apkFilterRegEx%5C%22%3A%5C%22fxboard%5C%22%2C%5C%22autoApkFilterByArch%5C%22%3Afalse%2C%5C%22trackOnly%5C%22%3Afalse%2C%5C%22versionDetection%5C%22%3A%5C%22standardVersionDetection%5C%22%2C%5C%22appName%5C%22%3A%5C%22fxboard%5C%22%7D%22%7D)
+- **Manual:** add `https://github.com/goddib/fxboard` as a GitHub source
+  (enable *Include prereleases* — CI publishes prerelease tags)
+- **Build:** Actions → **Android APK Release** → Run workflow
 
 ### Signing keystore (one-time setup via secrets)
 
