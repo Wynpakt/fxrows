@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../data/rates/rates_provider.dart';
+import '../../legal.dart';
 import '../convert/currency_flag.dart';
 import 'app_settings.dart';
 
@@ -193,8 +195,8 @@ class _SettingsPageState extends State<SettingsPage> {
           TextField(
             controller: _aggUrl,
             decoration: const InputDecoration(
-              labelText: 'fxboard server URL',
-              helperText: 'Used when “fxboard server (ECB)” is selected',
+              labelText: 'fxrows server URL',
+              helperText: 'Used when “fxrows server (ECB)” is selected',
               border: OutlineInputBorder(),
             ),
             keyboardType: TextInputType.url,
@@ -207,7 +209,7 @@ class _SettingsPageState extends State<SettingsPage> {
               decoration: InputDecoration(
                 labelText: 'ExchangeRate-API key',
                 helperText:
-                    'Stored only on this device. Never sent to the fxboard server.',
+                    'Stored only on this device. Never sent to the fxrows server.',
                 border: const OutlineInputBorder(),
                 suffixIcon: IconButton(
                   icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
@@ -223,7 +225,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 labelText: 'Open Exchange Rates App ID',
                 helperText:
                     'Stored only on this device. Free plan uses USD as base. '
-                    'Never sent to the fxboard server.',
+                    'Never sent to the fxrows server.',
                 border: const OutlineInputBorder(),
                 suffixIcon: IconButton(
                   icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
@@ -286,11 +288,35 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           const SizedBox(height: 24),
           Text(
-            'Default path uses ECB reference rates via your self-hosted '
-            'aggregator (free reuse with attribution). Optional BYO providers '
+            'Default path uses ECB reference rates via the fxrows aggregator '
+            '(free reuse with attribution). Optional BYO providers '
             '(ExchangeRate-API or Open Exchange Rates) call their APIs directly '
             'from the device for a wider currency set.',
             style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            FxrowsLegal.ratesFooter,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 16),
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.privacy_tip_outlined),
+            title: const Text('Privacy Policy'),
+            subtitle: const Text('Opens in browser'),
+            onTap: () async {
+              final uri = Uri.parse(FxrowsLegal.privacyPolicyUrl);
+              final ok = await launchUrl(
+                uri,
+                mode: LaunchMode.externalApplication,
+              );
+              if (!ok && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Could not open $uri')),
+                );
+              }
+            },
           ),
         ],
       ),

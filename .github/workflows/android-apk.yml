@@ -1,11 +1,11 @@
 name: Android APK Release
 
-# Builds a signed Flutter release APK and publishes it to GitHub Releases
-# for Obtainium (https://github.com/ImranR98/Obtainium).
+# Builds signed Flutter release APK (Obtainium) + App Bundle (Play Store upload)
+# and publishes both to GitHub Releases.
 #
 # Triggers:
 #   • push to main – when app/** or this workflow change
-#   • workflow_dispatch – build APK on demand
+#   • workflow_dispatch – build on demand
 #
 # Versioning (automatic):
 #   • versionName / Git tag: 0.1.<build> where build = run_number - ANDROID_VERSION_EPOCH
@@ -13,7 +13,7 @@ name: Android APK Release
 #
 # Optional repo variables (Settings → Actions → Variables):
 #   ANDROID_VERSION_EPOCH – subtract from run_number for 0.1.x display (default 0)
-#   FXBOARD_AGG_URL – override aggregator URL (source default: https://fxboard.wynpakt.com)
+#   FXROWS_AGG_URL – override aggregator URL (source default: https://fxrows.wynpakt.com)
 #
 # Required secrets for signing (stable Obtainium updates, keystore never committed):
 #   ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD
@@ -84,44 +84,51 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build release APK
+      - name: Build release APK and App Bundle
         env:
           ANDROID_KEYSTORE_FILE: release.keystore
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-          FXBOARD_AGG_URL: ${{ vars.FXBOARD_AGG_URL }}
+          FXROWS_AGG_URL: ${{ vars.FXROWS_AGG_URL }}
         run: |
           set -euo pipefail
           if [ -z "${ANDROID_KEYSTORE_PASSWORD:-}" ] || [ -z "${ANDROID_KEY_ALIAS:-}" ] || [ -z "${ANDROID_KEY_PASSWORD:-}" ]; then
             echo "::error::ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, and ANDROID_KEY_PASSWORD secrets are required."
             exit 1
           fi
-          AGG_URL="${FXBOARD_AGG_URL:-https://fxboard.wynpakt.com}"
-          echo "Baking FXBOARD_AGG_URL=${AGG_URL}"
-          flutter build apk --release \
-            --build-name="${ANDROID_VERSION_NAME}" \
-            --build-number="${ANDROID_VERSION_CODE}" \
-            --dart-define=FXBOARD_AGG_URL="${AGG_URL}"
+          AGG_URL="${FXROWS_AGG_URL:-https://fxrows.wynpakt.com}"
+          echo "Baking FXROWS_AGG_URL=${AGG_URL}"
+          COMMON=(
+            --release
+            --build-name="${ANDROID_VERSION_NAME}"
+            --build-number="${ANDROID_VERSION_CODE}"
+            --dart-define=FXROWS_AGG_URL="${AGG_URL}"
+          )
+          flutter build apk "${COMMON[@]}"
+          flutter build appbundle "${COMMON[@]}"
 
-      - name: Prepare APK
+      - name: Prepare artifacts
         working-directory: .
         run: |
-          cp app/build/app/outputs/flutter-apk/app-release.apk fxboard.apk
-          ls -lh fxboard.apk
+          cp app/build/app/outputs/flutter-apk/app-release.apk fxrows.apk
+          cp app/build/app/outputs/bundle/release/app-release.aab fxrows.aab
+          ls -lh fxrows.apk fxrows.aab
 
       - name: Publish to GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.APK_RELEASE_TAG }}
-          name: fxboard Android ${{ env.ANDROID_VERSION_NAME }}
+          name: fxrows Android ${{ env.ANDROID_VERSION_NAME }}
           body: |
-            Automated APK built on GitHub Actions from commit ${{ github.sha }}.
+            Automated Android build from commit ${{ github.sha }}.
 
+            - App: **fxrows** (`com.wynpakt.fxrows`)
             - Version: `${{ env.ANDROID_VERSION_NAME }}` (versionCode `${{ env.ANDROID_VERSION_CODE }}`)
-            - Built with Flutter (`flutter build apk --release`)
-            - Install via [Obtainium](https://github.com/ImranR98/Obtainium): `https://github.com/goddib/fxboard/releases/latest`
-            - Or download `fxboard.apk` below
-          files: fxboard.apk
+            - `fxrows.apk` — sideload / [Obtainium](https://github.com/ImranR98/Obtainium)
+            - `fxrows.aab` — upload to Google Play Console (see `docs/PLAY_STORE.md`)
+          files: |
+            fxrows.apk
+            fxrows.aab
           prerelease: true
           make_latest: true

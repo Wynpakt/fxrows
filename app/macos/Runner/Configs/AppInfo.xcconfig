@@ -5,10 +5,10 @@
 // 'flutter create' template.
 
 // The application's name. By default this is also the title of the Flutter window.
-PRODUCT_NAME = fxboard
+PRODUCT_NAME = fxrows
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.fxboard.fxboard
+PRODUCT_BUNDLE_IDENTIFIER = com.wynpakt.fxrows
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 com.fxboard. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2026 wynpakt. All rights reserved.

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fxboard/main.dart';
+import 'package:fxrows/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {

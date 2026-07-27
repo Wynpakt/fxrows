@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fxboard/data/rates/open_exchange_rates_provider.dart';
-import 'package:fxboard/data/rates/rate_snapshot.dart';
-import 'package:fxboard/features/convert/currency_flag.dart';
-import 'package:fxboard/features/convert/expression.dart';
+import 'package:fxrows/data/rates/open_exchange_rates_provider.dart';
+import 'package:fxrows/data/rates/rate_snapshot.dart';
+import 'package:fxrows/features/convert/currency_flag.dart';
+import 'package:fxrows/features/convert/expression.dart';
 
 void main() {
   group('tryEvaluateExpression', () {

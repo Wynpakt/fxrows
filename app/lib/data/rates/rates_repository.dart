@@ -7,8 +7,8 @@ import 'rates_provider.dart';
 class RatesRepository {
   RatesRepository({
     this.aggBaseUrl = const String.fromEnvironment(
-      'FXBOARD_AGG_URL',
-      defaultValue: 'https://fxboard.wynpakt.com',
+      'FXROWS_AGG_URL',
+      defaultValue: 'https://fxrows.wynpakt.com',
     ),
   });
 

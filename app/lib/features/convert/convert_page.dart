@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../legal.dart';
 import 'convert_controller.dart';
 import 'currency_flag.dart';
 
@@ -246,7 +247,7 @@ class _ConvertPageState extends State<ConvertPage> {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('fxboard'),
+        title: const Text('fxrows'),
         actions: [
           IconButton(
             tooltip: 'Refresh rates',
@@ -402,14 +403,22 @@ class _ConvertPageState extends State<ConvertPage> {
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
-                    Text(
-                      c.snapshot!.disclaimer,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                        fontStyle: FontStyle.italic,
+                    if (c.snapshot!.disclaimer.isNotEmpty)
+                      Text(
+                        c.snapshot!.disclaimer,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          fontStyle: FontStyle.italic,
+                        ),
                       ),
-                    ),
                   ],
+                  const SizedBox(height: 4),
+                  Text(
+                    FxrowsLegal.ratesFooter,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
                 ],
               ),
             ),

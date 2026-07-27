@@ -43,7 +43,7 @@ class _FxboardAppState extends State<FxboardApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'fxboard',
+      title: 'fxrows',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF1B4D3E),

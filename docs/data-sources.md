@@ -1,6 +1,6 @@
 # Data sources & attribution
 
-## Default path: ECB via fxboard server
+## Default path: ECB via fxrows aggregation server
 
 The aggregation server fetches the European Central Bank (ECB) euro foreign
 exchange reference rates (daily XML) and redistributes an unmodified snapshot
@@ -23,7 +23,7 @@ Using them for transaction purposes is strongly discouraged.
 
 When the user pastes their own API key, the Flutter app calls ExchangeRate-API
 **directly from the device**. Keys are stored in platform secure storage and
-are never sent to the fxboard aggregation server. Redistribution of that
+are never sent to the fxrows aggregation server. Redistribution of that
 provider’s data through our server is intentionally not implemented.
 
 Users remain bound by ExchangeRate-API’s terms of use.
@@ -32,9 +32,8 @@ Users remain bound by ExchangeRate-API’s terms of use.
 
 Same model: the user supplies an **App ID**; the app calls
 `https://openexchangerates.org/api/latest.json` from the device only. The App ID
-stays in secure storage and is never sent to the fxboard server.
-
-Free plans use **USD** as base currency (paid plans can change base). fxboard
+stays in secure storage and is never sent to the fxrows aggregation server.
+Free plans use **USD** as base currency (paid plans can change base). fxrows
 still converts via cross-rates, so any pair works. Users remain bound by Open
 Exchange Rates’ terms of use.
 

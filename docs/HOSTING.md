@@ -1,6 +1,7 @@
 # Aggregation server hosting
 
-The fxboard **aggregation server** runs as a Docker container on a VPS.
+The fxboard **aggregation server** (used by the **fxrows** app) runs as a Docker
+container on a VPS.
 The Flutter app is **not** Dockerized: it ships as platform builds
 (Android / iOS / desktop).
 
@@ -65,7 +66,7 @@ Fix once after first `up`:
 ```bash
 sudo chown -R 1000:1000 ./data
 docker compose restart server
-curl -sS https://fxboard.wynpakt.com/v1/health   # expect ok + has_snapshot
+curl -sS https://fxrows.wynpakt.com/v1/health   # expect ok + has_snapshot
 ```
 
 First pull may require `docker login ghcr.io` if the package is private.
@@ -73,7 +74,7 @@ Make the GHCR package public, or authenticate the VPS once.
 
 ## Production URL
 
-Public instance: `https://fxboard.wynpakt.com`  
+Public instance: `https://fxrows.wynpakt.com`  
 Health: `GET /v1/health` · Rates: `GET /v1/latest`
 
 ## Local development

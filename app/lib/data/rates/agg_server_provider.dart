@@ -9,7 +9,7 @@ import 'rates_provider.dart';
 class AggServerProvider implements RatesProvider {
   AggServerProvider({
     http.Client? client,
-    String baseUrl = 'https://fxboard.wynpakt.com',
+    String baseUrl = 'https://fxrows.wynpakt.com',
   })  : _client = client ?? http.Client(),
         baseUrl = baseUrl.replaceAll(RegExp(r'/+$'), '');
 
@@ -27,7 +27,7 @@ class AggServerProvider implements RatesProvider {
       res = await _client.get(uri).timeout(const Duration(seconds: 5));
     } catch (e) {
       throw RatesException(
-        'Cannot reach fxboard server at $baseUrl. Is it running?'
+        'Cannot reach fxrows server at $baseUrl. Is it running?'
         '$networkPermissionHint',
         code: 'network',
       );
