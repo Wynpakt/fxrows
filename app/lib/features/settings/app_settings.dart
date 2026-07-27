@@ -20,11 +20,11 @@ class AppSettings {
 
   static const defaultCurrencies = ['EUR', 'USD', 'GBP', 'GEL', 'CHF'];
 
-  /// Overridable at build time via `--dart-define=FXBOARD_AGG_URL=…`
-  /// (CI release APKs). Local/dev default remains loopback.
+  /// Production aggregator. Override at build time with
+  /// `--dart-define=FXBOARD_AGG_URL=…`, or in Settings for local/self-host.
   static const defaultAggUrl = String.fromEnvironment(
     'FXBOARD_AGG_URL',
-    defaultValue: 'http://127.0.0.1:8787',
+    defaultValue: 'https://fxboard.wynpakt.com',
   );
 
   Future<void> _ensurePrefs() async {

@@ -58,8 +58,23 @@ services:
       - ./data:/app/data
 ```
 
+The image runs as user `node` (UID/GID **1000**). A host bind mount
+(`./data`) created as root will cause `EACCES` on `/app/data/latest.json`.
+Fix once after first `up`:
+
+```bash
+sudo chown -R 1000:1000 ./data
+docker compose restart server
+curl -sS https://fxboard.wynpakt.com/v1/health   # expect ok + has_snapshot
+```
+
 First pull may require `docker login ghcr.io` if the package is private.
 Make the GHCR package public, or authenticate the VPS once.
+
+## Production URL
+
+Public instance: `https://fxboard.wynpakt.com`  
+Health: `GET /v1/health` · Rates: `GET /v1/latest`
 
 ## Local development
 

@@ -38,9 +38,9 @@ npm start            # http://127.0.0.1:8787
 curl http://127.0.0.1:8787/v1/latest | head
 ```
 
-Production: Docker image via GitHub Actions → GHCR; VPS does
-`docker compose pull && up -d`. See [docs/HOSTING.md](docs/HOSTING.md) and
-[docs/self-host.md](docs/self-host.md).
+Production: **https://fxboard.wynpakt.com** (Docker/GHCR on VPS). See
+[docs/HOSTING.md](docs/HOSTING.md) and [docs/self-host.md](docs/self-host.md).
+
 ## Quick start — app
 
 ```bash
@@ -49,11 +49,9 @@ flutter pub get
 flutter run -d linux   # or macos / windows / a connected device
 ```
 
-Default server URL: `http://127.0.0.1:8787` (change in Settings).
-Release APKs can bake a production URL via `--dart-define=FXBOARD_AGG_URL=…`
-(or the GitHub Actions variable of the same name).
-
-For a physical phone, use your machine’s LAN IP instead of `127.0.0.1`.
+Default server URL: **https://fxboard.wynpakt.com** (change in Settings for
+local/self-host, e.g. `http://127.0.0.1:8787`). Optional build override:
+`--dart-define=FXBOARD_AGG_URL=…` or the GitHub Actions variable of the same name.
 
 ## Android APK / Obtainium
 
@@ -99,7 +97,7 @@ Optional variables:
 | Variable | Purpose |
 | --- | --- |
 | `ANDROID_VERSION_EPOCH` | Subtract from `run_number` for `0.1.x` display (default `0`) |
-| `FXBOARD_AGG_URL` | Default aggregator URL baked into the APK |
+| `FXBOARD_AGG_URL` | Override aggregator URL baked into the APK (default in source: `https://fxboard.wynpakt.com`) |
 
 For local signed builds, create `app/android/keystore.properties` (git-ignored):
 

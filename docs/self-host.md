@@ -2,6 +2,7 @@
 
 ## Production (recommended)
 
+Public instance: **https://fxboard.wynpakt.com**  
 Deploy via Docker/GHCR on a VPS — see [HOSTING.md](HOSTING.md).
 CI builds the image; the VPS only runs `docker compose pull && up -d`.
 
@@ -28,8 +29,9 @@ On first start the server tries to fetch ECB rates and writes
 `ETag`. The process also auto-refreshes at most hourly when the snapshot is
 stale, so a separate cron is not required for production Docker deploys.
 
-Point the Flutter app (Settings → fxboard server URL) at your instance, e.g.
-`http://192.168.1.10:8787` on a LAN, or your public HTTPS URL.
+The Flutter app defaults to `https://fxboard.wynpakt.com`. For a local or
+self-hosted instance, change Settings → fxboard server URL (e.g.
+`http://127.0.0.1:8787` or `http://192.168.1.10:8787` on a LAN).
 
 ### Cron (optional, bare Node only)
 

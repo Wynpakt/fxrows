@@ -8,6 +8,8 @@ services:
       - "8787:8787"
     volumes:
       # Persistent ECB snapshot cache (not baked into the image).
+      # Host dir must be writable by UID 1000 (image USER node):
+      #   sudo chown -R 1000:1000 ./data
       - ./data:/app/data
     environment:
       PORT: "8787"

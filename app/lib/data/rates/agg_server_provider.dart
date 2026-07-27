@@ -9,7 +9,7 @@ import 'rates_provider.dart';
 class AggServerProvider implements RatesProvider {
   AggServerProvider({
     http.Client? client,
-    String baseUrl = 'http://127.0.0.1:8787',
+    String baseUrl = 'https://fxboard.wynpakt.com',
   })  : _client = client ?? http.Client(),
         baseUrl = baseUrl.replaceAll(RegExp(r'/+$'), '');
 

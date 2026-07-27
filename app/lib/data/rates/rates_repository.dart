@@ -7,7 +7,7 @@ class RatesRepository {
   RatesRepository({
     this.aggBaseUrl = const String.fromEnvironment(
       'FXBOARD_AGG_URL',
-      defaultValue: 'http://127.0.0.1:8787',
+      defaultValue: 'https://fxboard.wynpakt.com',
     ),
   });
 
