@@ -28,6 +28,16 @@ provider’s data through our server is intentionally not implemented.
 
 Users remain bound by ExchangeRate-API’s terms of use.
 
+## Optional BYO: Open Exchange Rates
+
+Same model: the user supplies an **App ID**; the app calls
+`https://openexchangerates.org/api/latest.json` from the device only. The App ID
+stays in secure storage and is never sent to the fxboard server.
+
+Free plans use **USD** as base currency (paid plans can change base). fxboard
+still converts via cross-rates, so any pair works. Users remain bound by Open
+Exchange Rates’ terms of use.
+
 ## What we do not do
 
 - Scrape Yahoo Finance, XE, Google, or similar proprietary UIs

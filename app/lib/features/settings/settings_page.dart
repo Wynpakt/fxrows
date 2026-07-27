@@ -22,7 +22,8 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   RatesProviderId _provider = RatesProviderId.aggServer;
   final _aggUrl = TextEditingController();
-  final _apiKey = TextEditingController();
+  final _eraKey = TextEditingController();
+  final _oerAppId = TextEditingController();
   Map<String, double> _customRates = {};
   bool _loading = true;
   bool _obscure = true;
@@ -36,12 +37,14 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _load() async {
     final provider = await widget.settings.providerId();
     final url = await widget.settings.aggBaseUrl();
-    final key = await widget.settings.exchangeRateApiKey();
+    final era = await widget.settings.exchangeRateApiKey();
+    final oer = await widget.settings.openExchangeRatesAppId();
     final custom = await widget.settings.customRates();
     setState(() {
       _provider = provider;
       _aggUrl.text = url;
-      _apiKey.text = key ?? '';
+      _eraKey.text = era ?? '';
+      _oerAppId.text = oer ?? '';
       _customRates = custom;
       _loading = false;
     });
@@ -50,18 +53,20 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void dispose() {
     _aggUrl.dispose();
-    _apiKey.dispose();
+    _eraKey.dispose();
+    _oerAppId.dispose();
     super.dispose();
   }
 
   Future<void> _save() async {
     await widget.settings.setProviderId(_provider);
     await widget.settings.setAggBaseUrl(_aggUrl.text);
-    await widget.settings.setExchangeRateApiKey(
-      _provider == RatesProviderId.exchangeRateApi ? _apiKey.text : null,
-    );
-    if (_apiKey.text.trim().isNotEmpty) {
-      await widget.settings.setExchangeRateApiKey(_apiKey.text);
+    // Persist both keys when non-empty so switching providers keeps credentials.
+    if (_eraKey.text.trim().isNotEmpty) {
+      await widget.settings.setExchangeRateApiKey(_eraKey.text);
+    }
+    if (_oerAppId.text.trim().isNotEmpty) {
+      await widget.settings.setOpenExchangeRatesAppId(_oerAppId.text);
     }
     widget.onChanged();
     if (mounted) {
@@ -195,20 +200,37 @@ class _SettingsPageState extends State<SettingsPage> {
             keyboardType: TextInputType.url,
           ),
           const SizedBox(height: 16),
-          TextField(
-            controller: _apiKey,
-            obscureText: _obscure,
-            decoration: InputDecoration(
-              labelText: 'ExchangeRate-API key',
-              helperText:
-                  'Stored only on this device. Never sent to the fxboard server.',
-              border: const OutlineInputBorder(),
-              suffixIcon: IconButton(
-                icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
-                onPressed: () => setState(() => _obscure = !_obscure),
+          if (_provider == RatesProviderId.exchangeRateApi)
+            TextField(
+              controller: _eraKey,
+              obscureText: _obscure,
+              decoration: InputDecoration(
+                labelText: 'ExchangeRate-API key',
+                helperText:
+                    'Stored only on this device. Never sent to the fxboard server.',
+                border: const OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
+                  onPressed: () => setState(() => _obscure = !_obscure),
+                ),
               ),
             ),
-          ),
+          if (_provider == RatesProviderId.openExchangeRates)
+            TextField(
+              controller: _oerAppId,
+              obscureText: _obscure,
+              decoration: InputDecoration(
+                labelText: 'Open Exchange Rates App ID',
+                helperText:
+                    'Stored only on this device. Free plan uses USD as base. '
+                    'Never sent to the fxboard server.',
+                border: const OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
+                  onPressed: () => setState(() => _obscure = !_obscure),
+                ),
+              ),
+            ),
           const SizedBox(height: 24),
           Row(
             children: [
@@ -226,7 +248,8 @@ class _SettingsPageState extends State<SettingsPage> {
             ],
           ),
           Text(
-            'Self-maintained rates as units per 1 provider base (usually EUR). '
+            'Self-maintained rates as units per 1 provider base '
+            '(ECB: usually EUR; Open Exchange Rates free: USD). '
             'They merge with live rates and stay on this device.',
             style: Theme.of(context).textTheme.bodySmall,
           ),
@@ -264,8 +287,9 @@ class _SettingsPageState extends State<SettingsPage> {
           const SizedBox(height: 24),
           Text(
             'Default path uses ECB reference rates via your self-hosted '
-            'aggregator (free reuse with attribution). Optional BYO key calls '
-            'ExchangeRate-API directly from the app for a wider currency set.',
+            'aggregator (free reuse with attribution). Optional BYO providers '
+            '(ExchangeRate-API or Open Exchange Rates) call their APIs directly '
+            'from the device for a wider currency set.',
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ],

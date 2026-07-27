@@ -19,6 +19,7 @@ class AppSettings {
   static const _kAggUrl = 'agg_base_url';
   static const _kCurrencies = 'visible_currencies';
   static const _kApiKey = 'exchangerate_api_key';
+  static const _kOerAppId = 'open_exchange_rates_app_id';
   static const _kCustomRates = 'custom_rates';
 
   static const defaultCurrencies = ['EUR', 'USD', 'GBP', 'GEL', 'CHF'];
@@ -119,6 +120,16 @@ class AppSettings {
       await _secure.delete(key: _kApiKey);
     } else {
       await _secure.write(key: _kApiKey, value: key.trim());
+    }
+  }
+
+  Future<String?> openExchangeRatesAppId() => _secure.read(key: _kOerAppId);
+
+  Future<void> setOpenExchangeRatesAppId(String? appId) async {
+    if (appId == null || appId.trim().isEmpty) {
+      await _secure.delete(key: _kOerAppId);
+    } else {
+      await _secure.write(key: _kOerAppId, value: appId.trim());
     }
   }
 }

@@ -3,13 +3,19 @@ import 'rate_snapshot.dart';
 enum RatesProviderId {
   aggServer,
   exchangeRateApi,
+  openExchangeRates,
 }
 
 extension RatesProviderIdX on RatesProviderId {
   String get label => switch (this) {
         RatesProviderId.aggServer => 'fxboard server (ECB)',
         RatesProviderId.exchangeRateApi => 'ExchangeRate-API (BYO key)',
+        RatesProviderId.openExchangeRates => 'Open Exchange Rates (BYO App ID)',
       };
+
+  bool get isByoKey =>
+      this == RatesProviderId.exchangeRateApi ||
+      this == RatesProviderId.openExchangeRates;
 }
 
 abstract class RatesProvider {
@@ -27,3 +33,8 @@ class RatesException implements Exception {
   @override
   String toString() => message;
 }
+
+/// Appended to network failures so GrapheneOS users enable App info → Network.
+const networkPermissionHint =
+    ' If this persists on GrapheneOS/hardened Android, enable Network '
+    'permission for fxboard in App info.';

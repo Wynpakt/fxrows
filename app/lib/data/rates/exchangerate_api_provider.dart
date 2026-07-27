@@ -30,7 +30,10 @@ class ExchangeRateApiProvider implements RatesProvider {
     try {
       res = await _client.get(uri).timeout(const Duration(seconds: 20));
     } catch (e) {
-      throw RatesException('Network error contacting ExchangeRate-API', code: 'network');
+      throw RatesException(
+        'Network error contacting ExchangeRate-API.$networkPermissionHint',
+        code: 'network',
+      );
     }
 
     final json = jsonDecode(res.body) as Map<String, dynamic>;

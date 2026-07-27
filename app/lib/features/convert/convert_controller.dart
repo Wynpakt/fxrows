@@ -47,10 +47,12 @@ class ConvertController extends ChangeNotifier {
       providerId = await _settings.providerId();
       _repository.aggBaseUrl = await _settings.aggBaseUrl();
       customRates = await _settings.customRates();
-      final key = await _settings.exchangeRateApiKey();
+      final eraKey = await _settings.exchangeRateApiKey();
+      final oerId = await _settings.openExchangeRatesAppId();
       final next = await _repository.fetch(
         providerId: providerId,
-        exchangeRateApiKey: key,
+        exchangeRateApiKey: eraKey,
+        openExchangeRatesAppId: oerId,
       );
       final merged = next.mergedWith(customRates);
       snapshot = merged;

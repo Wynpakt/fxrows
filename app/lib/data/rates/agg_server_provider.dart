@@ -27,7 +27,8 @@ class AggServerProvider implements RatesProvider {
       res = await _client.get(uri).timeout(const Duration(seconds: 5));
     } catch (e) {
       throw RatesException(
-        'Cannot reach fxboard server at $baseUrl. Is it running?',
+        'Cannot reach fxboard server at $baseUrl. Is it running?'
+        '$networkPermissionHint',
         code: 'network',
       );
     }

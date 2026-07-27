@@ -13,7 +13,7 @@ simple expressions (`100+50`, `200-30`, `2*3+4`).
 ## Features
 
 - **Default rates:** self-hosted server → ECB euro reference rates (legal free reuse with attribution)
-- **Optional BYO key:** ExchangeRate-API from the device only (wider set / own quota)
+- **Optional BYO keys:** ExchangeRate-API or Open Exchange Rates from the device only (wider set / own quota)
 - **Multi-currency grid** with pivot sync
 - **Inline calculator** in amount fields
 - **Flags** next to currency codes; optional **custom currencies** with manual rates

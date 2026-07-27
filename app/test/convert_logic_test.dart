@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fxboard/data/rates/open_exchange_rates_provider.dart';
 import 'package:fxboard/data/rates/rate_snapshot.dart';
 import 'package:fxboard/features/convert/currency_flag.dart';
 import 'package:fxboard/features/convert/expression.dart';
@@ -71,6 +72,35 @@ void main() {
     test('unknown is empty', () {
       expect(currencyFlag('ZZZ'), '');
       expect(currencyLabel('ZZZ'), 'ZZZ');
+    });
+  });
+
+  group('parseOpenExchangeRatesLatest', () {
+    test('maps USD-base payload', () {
+      final snap = parseOpenExchangeRatesLatest({
+        'disclaimer': 'Sample disclaimer',
+        'license': 'https://example.com/license',
+        'timestamp': 1449877801,
+        'base': 'USD',
+        'rates': {
+          'USD': 1,
+          'EUR': 0.92,
+          'GBP': 0.75,
+          'GEL': 2.7,
+        },
+      });
+      expect(snap.base, 'USD');
+      expect(snap.source, 'Open Exchange Rates');
+      expect(snap.asOf, '2015-12-11');
+      expect(snap.rates['EUR'], 0.92);
+      expect(
+        snap.convert(amount: 100, from: 'USD', to: 'EUR'),
+        closeTo(92, 0.001),
+      );
+      expect(
+        snap.convert(amount: 100, from: 'EUR', to: 'GBP'),
+        closeTo(100 * 0.75 / 0.92, 0.001),
+      );
     });
   });
 }
