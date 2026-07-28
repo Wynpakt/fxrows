@@ -24,9 +24,9 @@ class ConvertController extends ChangeNotifier {
   String? statusMessage;
   String? errorMessage;
   bool loading = false;
-  /// True when showing [RateSnapshot.dummy] after a failed fetch.
+  /// True when showing [RateSnapshot.dummy] after a failed fetch with no cache.
   bool usingFallbackRates = false;
-  RatesProviderId providerId = RatesProviderId.aggServer;
+  RatesProviderId providerId = RatesProviderId.ecbDirect;
 
   bool isCustom(String code) => customRates.containsKey(code.toUpperCase());
 
@@ -52,10 +52,19 @@ class ConvertController extends ChangeNotifier {
     for (final c in currencies) {
       amounts.putIfAbsent(c, () => c == currencies.first ? 100 : 0);
     }
-    await refreshRates();
+
+    // Offline-first: paint from disk cache before any network call.
+    final cached = await _repository.loadCached(providerId);
+    if (cached != null) {
+      _applySnapshot(cached, fromNetwork: false);
+      notifyListeners();
+    }
+
+    await refreshRates(force: false);
   }
 
-  Future<void> refreshRates() async {
+  /// [force] true = manual refresh (bypass smart/throttle policy).
+  Future<void> refreshRates({bool force = true}) async {
     loading = true;
     errorMessage = null;
     notifyListeners();
@@ -69,31 +78,9 @@ class ConvertController extends ChangeNotifier {
         providerId: providerId,
         exchangeRateApiKey: eraKey,
         openExchangeRatesAppId: oerId,
+        forceRefresh: force,
       );
-      final merged = next.mergedWith(customRates);
-      snapshot = merged;
-      // Keep provider currencies and user-defined customs; preserve order.
-      currencies = [
-        for (final c in currencies)
-          if (merged.rates.containsKey(c)) c,
-      ];
-      if (currencies.isEmpty) {
-        currencies = [
-          for (final c in AppSettings.defaultCurrencies)
-            if (merged.rates.containsKey(c)) c,
-        ];
-        if (currencies.isEmpty) {
-          currencies = merged.rates.keys.take(5).toList();
-        }
-      }
-      final pivot = currencies.first;
-      final pivotAmount = amounts[pivot] ?? 100;
-      _recomputeFrom(pivot, pivotAmount);
-      usingFallbackRates = false;
-      final customNote =
-          customRates.isEmpty ? '' : ' · ${customRates.length} custom';
-      statusMessage =
-          '${next.source} · as of ${next.asOf} · ${merged.rates.length} currencies$customNote';
+      _applySnapshot(next, fromNetwork: true);
     } catch (e) {
       errorMessage = humanizeError(e);
       // Keep UI usable with last snapshot or dummy + customs.
@@ -103,6 +90,10 @@ class ConvertController extends ChangeNotifier {
       if (usingFallbackRates) {
         statusMessage =
             'Offline fallback rates (not live). Retry when you are online.';
+      } else if (snapshot != null) {
+        statusMessage =
+            '${snapshot!.source} · as of ${snapshot!.asOf} · cached '
+            '(refresh failed)';
       }
       if (amounts.values.every((v) => v == 0) && currencies.isNotEmpty) {
         _recomputeFrom(currencies.first, 100);
@@ -111,6 +102,34 @@ class ConvertController extends ChangeNotifier {
       loading = false;
       notifyListeners();
     }
+  }
+
+  void _applySnapshot(RateSnapshot next, {required bool fromNetwork}) {
+    final merged = next.mergedWith(customRates);
+    snapshot = merged;
+    currencies = [
+      for (final c in currencies)
+        if (merged.rates.containsKey(c)) c,
+    ];
+    if (currencies.isEmpty) {
+      currencies = [
+        for (final c in AppSettings.defaultCurrencies)
+          if (merged.rates.containsKey(c)) c,
+      ];
+      if (currencies.isEmpty) {
+        currencies = merged.rates.keys.take(5).toList();
+      }
+    }
+    final pivot = currencies.first;
+    final pivotAmount = amounts[pivot] ?? 100;
+    _recomputeFrom(pivot, pivotAmount);
+    usingFallbackRates = false;
+    final customNote =
+        customRates.isEmpty ? '' : ' · ${customRates.length} custom';
+    final cacheNote = fromNetwork ? '' : ' · cached';
+    statusMessage =
+        '${next.source} · as of ${next.asOf} · ${merged.rates.length} '
+        'currencies$customNote$cacheNote';
   }
 
   void addCurrency(String code) {
@@ -184,7 +203,7 @@ class ConvertController extends ChangeNotifier {
       amounts.remove(c);
       await _settings.setVisibleCurrencies(currencies);
     }
-    await refreshRates();
+    await refreshRates(force: false);
   }
 
   void removeCurrency(String code) {

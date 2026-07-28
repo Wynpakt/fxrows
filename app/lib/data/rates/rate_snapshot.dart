@@ -57,6 +57,16 @@ class RateSnapshot {
     return amount * toRate / fromRate;
   }
 
+  Map<String, dynamic> toJson() => {
+        'base': base,
+        'as_of': asOf,
+        'fetched_at': fetchedAt.toUtc().toIso8601String(),
+        'source': source,
+        'attribution': attribution,
+        'disclaimer': disclaimer,
+        'rates': rates,
+      };
+
   factory RateSnapshot.fromJson(Map<String, dynamic> json) {
     final rawRates = json['rates'] as Map<String, dynamic>? ?? {};
     final rates = <String, double>{

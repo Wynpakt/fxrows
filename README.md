@@ -1,11 +1,11 @@
 # fxrows
 
-Open-source **multi-currency converter** (Flutter) plus a **thin aggregation
-server** that redistributes ECB reference rates so users do not need an API key
-by default.
+Open-source **multi-currency converter** (Flutter). Default rates come **directly
+from the ECB** (cached on device for offline use). No API key and no wynpakt
+server required. An optional thin aggregation server lives in `server/` for
+self-hosters.
 
 > Repo: [Wynpakt/fxrows](https://github.com/Wynpakt/fxrows) · local `https://github.com/Wynpakt/fxrows`.
-> Aggregation API: `https://fxrows.wynpakt.com`.
 
 ## Why
 
@@ -15,35 +15,23 @@ simple expressions (`100+50`, `200-30`, `2*3+4`).
 
 ## Features
 
-- **Default rates:** self-hosted server → ECB euro reference rates (legal free reuse with attribution)
+- **Default rates:** ECB euro reference rates fetched on-device (legal free reuse with attribution), smart daily refresh, offline cache
 - **Optional BYO keys:** ExchangeRate-API or Open Exchange Rates from the device only (wider set / own quota)
+- **Optional Advanced:** self-hosted aggregator URL
 - **Multi-currency grid** with pivot sync
 - **Inline calculator** in amount fields
 - **Flags** next to currency codes; optional **custom currencies** with manual rates
 - Platforms: Android, iOS, Linux, macOS, Windows (Web out of scope)
+- **No** analytics / activity ping to wynpakt
 
 ## Repository layout
 
 ```
 fxrows/
-  app/       Flutter client
-  server/    Node.js aggregation API (Docker/GHCR for prod)
+  app/       Flutter client (default: direct ECB)
+  server/    Optional Node.js aggregation API (Docker/GHCR)
   docs/      Data-source policy, hosting, privacy, Play Store notes
 ```
-
-## Quick start — server
-
-Local (dev):
-
-```bash
-cd server
-node src/ingest.js   # fetch ECB → data/latest.json
-npm start            # http://127.0.0.1:8787
-curl http://127.0.0.1:8787/v1/latest | head
-```
-
-Production: **https://fxrows.wynpakt.com** (Docker/GHCR on VPS). See
-[docs/HOSTING.md](docs/HOSTING.md) and [docs/self-host.md](docs/self-host.md).
 
 ## Quick start — app
 
@@ -53,9 +41,21 @@ flutter pub get
 flutter run -d linux   # or macos / windows / a connected device
 ```
 
-Default server URL: **https://fxrows.wynpakt.com** (change in Settings for
-local/self-host, e.g. `http://127.0.0.1:8787`). Optional build override:
-`--dart-define=FXROWS_AGG_URL=…` or the GitHub Actions variable of the same name.
+Default: HTTPS to the ECB daily XML feed; snapshot cached locally. Optional
+self-hosted aggregator: Settings → Advanced (see
+[docs/self-host.md](docs/self-host.md)).
+
+## Optional — aggregation server
+
+```bash
+cd server
+node src/ingest.js   # fetch ECB → data/latest.json
+npm start            # http://127.0.0.1:8787
+curl http://127.0.0.1:8787/v1/latest | head
+```
+
+Production reference: **https://fxrows.wynpakt.com** (Docker/GHCR on VPS). See
+[docs/HOSTING.md](docs/HOSTING.md) and [docs/self-host.md](docs/self-host.md).
 
 ## Android APK / Obtainium
 
@@ -106,7 +106,7 @@ Optional variables:
 | Variable | Purpose |
 | --- | --- |
 | `ANDROID_VERSION_EPOCH` | Subtract from `run_number` for `0.1.x` display (default `0`) |
-| `FXROWS_AGG_URL` | Override aggregator URL baked into the APK (default in source: `https://fxrows.wynpakt.com`) |
+| `FXROWS_AGG_URL` | Optional default URL for the **Advanced** self-hosted aggregator provider only |
 
 For local signed builds, create `app/android/keystore.properties` (git-ignored):
 

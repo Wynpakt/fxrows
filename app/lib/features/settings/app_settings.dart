@@ -28,8 +28,8 @@ class AppSettings {
 
   static const defaultCurrencies = ['EUR', 'USD', 'GBP', 'GEL', 'CHF'];
 
-  /// Production aggregator. Override at build time with
-  /// `--dart-define=FXROWS_AGG_URL=…`, or in Settings for local/self-host.
+  /// Optional self-hosted aggregator URL (advanced provider only).
+  /// Override at build time with `--dart-define=FXROWS_AGG_URL=…`.
   static const defaultAggUrl = String.fromEnvironment(
     'FXROWS_AGG_URL',
     defaultValue: 'https://fxrows.wynpakt.com',
@@ -42,9 +42,10 @@ class AppSettings {
   Future<RatesProviderId> providerId() async {
     await _ensurePrefs();
     final raw = _prefs!.getString(_kProvider);
+    if (raw == null || raw.isEmpty) return RatesProviderId.ecbDirect;
     return RatesProviderId.values.firstWhere(
       (e) => e.name == raw,
-      orElse: () => RatesProviderId.aggServer,
+      orElse: () => RatesProviderId.ecbDirect,
     );
   }
 

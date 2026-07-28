@@ -13,7 +13,7 @@ name: Android APK Release
 #
 # Optional repo variables (Settings → Actions → Variables):
 #   ANDROID_VERSION_EPOCH – subtract from run_number for 0.1.x display (default 0)
-#   FXROWS_AGG_URL – override aggregator URL (source default: https://fxrows.wynpakt.com)
+#   FXROWS_AGG_URL – optional default for Advanced self-hosted aggregator only
 #
 # Required secrets for signing (stable Obtainium updates, keystore never committed):
 #   ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD

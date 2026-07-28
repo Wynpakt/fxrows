@@ -8,5 +8,6 @@ class FxrowsLegal {
 
   static const ratesFooter =
       'Rates are informational only, not for transaction settlement. '
-      'Default source: ECB euro reference rates (attribution required).';
+      'Default source: ECB euro reference rates fetched directly from the ECB '
+      '(attribution required). Cached on device for offline use.';
 }

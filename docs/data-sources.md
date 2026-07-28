@@ -1,10 +1,11 @@
 # Data sources & attribution
 
-## Default path: ECB via fxrows aggregation server
+## Default path: ECB direct (on device)
 
-The aggregation server fetches the European Central Bank (ECB) euro foreign
-exchange reference rates (daily XML) and redistributes an unmodified snapshot
-to clients.
+The Flutter app downloads the European Central Bank (ECB) euro foreign exchange
+reference rates (daily XML) **directly from the ECB**, parses an unmodified
+snapshot, and caches it on the device for offline use. Smart refresh aims for
+about once per TARGET business day after the usual ~16:00 CET publication.
 
 **Reuse policy (summary):** ESCB statistics may be reused free of charge if:
 
@@ -22,9 +23,9 @@ Using them for transaction purposes is strongly discouraged.
 ## Optional BYO: ExchangeRate-API
 
 When the user pastes their own API key, the Flutter app calls ExchangeRate-API
-**directly from the device**. Keys are stored in platform secure storage and
-are never sent to the fxrows aggregation server. Redistribution of that
-provider’s data through our server is intentionally not implemented.
+**directly from the device**. Keys are stored in platform secure storage.
+Redistribution of that provider’s data through any fxrows aggregation server is
+intentionally not implemented.
 
 Users remain bound by ExchangeRate-API’s terms of use.
 
@@ -32,13 +33,21 @@ Users remain bound by ExchangeRate-API’s terms of use.
 
 Same model: the user supplies an **App ID**; the app calls
 `https://openexchangerates.org/api/latest.json` from the device only. The App ID
-stays in secure storage and is never sent to the fxrows aggregation server.
-Free plans use **USD** as base currency (paid plans can change base). fxrows
-still converts via cross-rates, so any pair works. Users remain bound by Open
-Exchange Rates’ terms of use.
+stays in secure storage. Free plans use **USD** as base currency (paid plans can
+change base). fxrows still converts via cross-rates, so any pair works. Users
+remain bound by Open Exchange Rates’ terms of use.
+
+## Optional: self-hosted aggregation server
+
+The `server/` package can still ingest ECB XML and expose `GET /v1/latest` for
+self-hosters or experiments. The app may use it only when the user selects the
+**Advanced → Self-hosted aggregator** option. It is **not** the default path and
+is not required to run the app. See [self-host.md](self-host.md) and
+[HOSTING.md](HOSTING.md).
 
 ## What we do not do
 
 - Scrape Yahoo Finance, XE, Google, or similar proprietary UIs
-- Proxy commercial FX APIs through the aggregation server
+- Proxy commercial FX APIs through an aggregation server
 - Claim rates are suitable as transaction benchmarks
+- Phone home to wynpakt for analytics or install tracking

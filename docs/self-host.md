@@ -1,8 +1,12 @@
-# Self-host the aggregation server
+# Self-host the aggregation server (optional)
 
-## Production (recommended)
+The Flutter app defaults to **direct ECB** downloads on the device. The
+aggregation server is optional for self-hosters, experiments, or the Advanced
+provider in Settings.
 
-Public instance: **https://fxrows.wynpakt.com**  
+## Production (recommended if you host one)
+
+Public reference instance: **https://fxrows.wynpakt.com**  
 Deploy via Docker/GHCR on a VPS — see [HOSTING.md](HOSTING.md).
 CI builds the image; the VPS only runs `docker compose pull && up -d`.
 
@@ -29,9 +33,10 @@ On first start the server tries to fetch ECB rates and writes
 `ETag`. The process also auto-refreshes at most hourly when the snapshot is
 stale, so a separate cron is not required for production Docker deploys.
 
-The Flutter app defaults to `https://fxrows.wynpakt.com`. For a local or
-self-hosted instance, change Settings → fxrows server URL (e.g.
-`http://127.0.0.1:8787` or `http://192.168.1.10:8787` on a LAN).
+In the Flutter app: **Settings → Advanced → Self-hosted aggregator**, then set
+the URL (e.g. `http://127.0.0.1:8787` or `http://192.168.1.10:8787` on a LAN).
+Optional build-time default for that advanced path:
+`--dart-define=FXROWS_AGG_URL=…`.
 
 ### Cron (optional, bare Node only)
 

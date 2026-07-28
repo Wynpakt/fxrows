@@ -18,11 +18,15 @@ class _FakeRepo extends RatesRepository {
     required RatesProviderId providerId,
     String? exchangeRateApiKey,
     String? openExchangeRatesAppId,
+    bool forceRefresh = false,
   }) async {
     fetchCount++;
+    lastForceRefresh = forceRefresh;
     if (error != null) throw error!;
     return next ?? RateSnapshot.dummy();
   }
+
+  bool? lastForceRefresh;
 }
 
 void main() {

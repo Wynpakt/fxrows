@@ -22,13 +22,14 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  RatesProviderId _provider = RatesProviderId.aggServer;
+  RatesProviderId _provider = RatesProviderId.ecbDirect;
   final _aggUrl = TextEditingController();
   final _eraKey = TextEditingController();
   final _oerAppId = TextEditingController();
   Map<String, double> _customRates = {};
   bool _loading = true;
   bool _obscure = true;
+  bool _showAdvanced = false;
 
   @override
   void initState() {
@@ -48,6 +49,7 @@ class _SettingsPageState extends State<SettingsPage> {
       _eraKey.text = era ?? '';
       _oerAppId.text = oer ?? '';
       _customRates = custom;
+      _showAdvanced = provider == RatesProviderId.aggServer;
       _loading = false;
     });
   }
@@ -159,6 +161,9 @@ class _SettingsPageState extends State<SettingsPage> {
     widget.onChanged();
   }
 
+  Iterable<RatesProviderId> get _primaryProviders => RatesProviderId.values
+      .where((id) => !id.isAdvanced);
+
   @override
   Widget build(BuildContext context) {
     if (_loading) {
@@ -180,7 +185,7 @@ class _SettingsPageState extends State<SettingsPage> {
         children: [
           Text('Rate source', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
-          ...RatesProviderId.values.map(
+          ..._primaryProviders.map(
             (id) => Semantics(
               selected: _provider == id,
               button: true,
@@ -197,15 +202,42 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _aggUrl,
-            decoration: const InputDecoration(
-              labelText: 'fxrows server URL',
-              helperText: 'Used when “fxrows server (ECB)” is selected',
-              border: OutlineInputBorder(),
-            ),
-            keyboardType: TextInputType.url,
+          const SizedBox(height: 8),
+          ExpansionTile(
+            initiallyExpanded: _showAdvanced,
+            title: const Text('Advanced'),
+            subtitle: const Text('Optional self-hosted aggregator'),
+            children: [
+              Semantics(
+                selected: _provider == RatesProviderId.aggServer,
+                button: true,
+                label: 'Rate source ${RatesProviderId.aggServer.label}',
+                child: ListTile(
+                  title: Text(RatesProviderId.aggServer.label),
+                  leading: Icon(
+                    _provider == RatesProviderId.aggServer
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_off,
+                  ),
+                  selected: _provider == RatesProviderId.aggServer,
+                  onTap: () =>
+                      setState(() => _provider = RatesProviderId.aggServer),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: TextField(
+                  controller: _aggUrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Aggregator URL',
+                    helperText:
+                        'Only used when the self-hosted aggregator is selected',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.url,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           if (_provider == RatesProviderId.exchangeRateApi)
@@ -215,7 +247,7 @@ class _SettingsPageState extends State<SettingsPage> {
               decoration: InputDecoration(
                 labelText: 'ExchangeRate-API key',
                 helperText:
-                    'Stored only on this device. Never sent to the fxrows server.',
+                    'Stored only on this device. Never sent to any fxrows server.',
                 border: const OutlineInputBorder(),
                 suffixIcon: IconButton(
                   icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
@@ -230,8 +262,7 @@ class _SettingsPageState extends State<SettingsPage> {
               decoration: InputDecoration(
                 labelText: 'Open Exchange Rates App ID',
                 helperText:
-                    'Stored only on this device. Free plan uses USD as base. '
-                    'Never sent to the fxrows server.',
+                    'Stored only on this device. Free plan uses USD as base.',
                 border: const OutlineInputBorder(),
                 suffixIcon: IconButton(
                   icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
@@ -294,10 +325,10 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           const SizedBox(height: 24),
           Text(
-            'Default path uses ECB reference rates via the fxrows aggregator '
-            '(free reuse with attribution). Optional BYO providers '
-            '(ExchangeRate-API or Open Exchange Rates) call their APIs directly '
-            'from the device for a wider currency set.',
+            'Default path downloads ECB euro reference rates directly to this '
+            'device and caches them for offline use (free reuse with attribution). '
+            'Optional BYO providers call their APIs from the device for a wider '
+            'currency set. fxrows does not run an analytics or activity ping.',
             style: Theme.of(context).textTheme.bodySmall,
           ),
           const SizedBox(height: 8),
