@@ -24,6 +24,11 @@ void main() {
       expect(tryEvaluateExpression('100/4'), 25);
     });
 
+    test('div by zero and unary after op', () {
+      expect(tryEvaluateExpression('1/0'), isNull);
+      expect(tryEvaluateExpression('2*-3'), -6);
+    });
+
     test('invalid returns null', () {
       expect(tryEvaluateExpression(''), isNull);
       expect(tryEvaluateExpression('1+'), isNull);
@@ -62,16 +67,11 @@ void main() {
     });
   });
 
-  group('currencyFlag', () {
-    test('known codes', () {
-      expect(currencyFlag('EUR'), '🇪🇺');
-      expect(currencyFlag('usd'), '🇺🇸');
-      expect(currencyFlag('GEL'), '🇬🇪');
-    });
-
-    test('unknown is empty', () {
-      expect(currencyFlag('ZZZ'), '');
-      expect(currencyLabel('ZZZ'), 'ZZZ');
+  group('currencyLabel', () {
+    test('uppercases codes without emoji', () {
+      expect(currencyLabel('eur'), 'EUR');
+      expect(currencyLabel('USD'), 'USD');
+      expect(currencyLabel('gel'), 'GEL');
     });
   });
 

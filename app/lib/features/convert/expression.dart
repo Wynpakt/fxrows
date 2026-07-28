@@ -4,7 +4,7 @@ double? tryEvaluateExpression(String input) {
   final trimmed = input.trim();
   if (trimmed.isEmpty) return null;
 
-  // Plain number (no operators) — still normalize comma.
+  // Plain number (no operators); still normalize comma.
   if (!_hasOperator(trimmed)) {
     return _parseNumber(trimmed);
   }

@@ -25,7 +25,7 @@ import { parseEcbDailyXml } from "./parse-ecb.js";
  */
 export async function fetchAndBuildSnapshot() {
   const res = await fetch(ECB_DAILY_URL, {
-    headers: { "User-Agent": "fxboard-server/0.1 (+https://github.com/fxboard)" },
+    headers: { "User-Agent": "fxrows-server/0.1 (+https://github.com/Wynpakt/fxrows)" },
   });
   if (!res.ok) {
     throw new Error(`ECB fetch failed: HTTP ${res.status}`);

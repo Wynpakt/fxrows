@@ -1,4 +1,4 @@
-/** Shared constants for fxboard aggregation server. */
+/** Shared constants for fxrows aggregation server. */
 
 export const ECB_DAILY_URL =
   "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml";
@@ -12,3 +12,7 @@ export const DISCLAIMER =
 export const DEFAULT_PORT = 8787;
 
 export const SNAPSHOT_PATH = new URL("../data/latest.json", import.meta.url);
+
+/** Soft per-IP limit for public endpoints (requests per window). */
+export const RATE_LIMIT_WINDOW_MS = 60_000;
+export const RATE_LIMIT_MAX = 120;

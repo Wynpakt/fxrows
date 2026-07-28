@@ -7,6 +7,6 @@ class FxrowsLegal {
       'https://raw.githubusercontent.com/Wynpakt/fxrows/main/docs/privacy.md';
 
   static const ratesFooter =
-      'Rates are informational only — not for transaction settlement. '
+      'Rates are informational only, not for transaction settlement. '
       'Default source: ECB euro reference rates (attribution required).';
 }

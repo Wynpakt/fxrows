@@ -1,12 +1,29 @@
 import { createHash } from "node:crypto";
 import { createServer } from "node:http";
-import { DEFAULT_PORT } from "./constants.js";
+import {
+  DEFAULT_PORT,
+  RATE_LIMIT_MAX,
+  RATE_LIMIT_WINDOW_MS,
+} from "./constants.js";
+import { createRateLimiter } from "./rate-limit.js";
 import { ingest, readSnapshot } from "./snapshot.js";
 
 /** @type {import('./snapshot.js').RateSnapshot | null} */
 let cache = null;
 let lastIngestAttempt = 0;
 const INGEST_COOLDOWN_MS = 60 * 60 * 1000; // at most hourly auto-refresh
+
+const limiter = createRateLimiter({
+  windowMs: RATE_LIMIT_WINDOW_MS,
+  max: RATE_LIMIT_MAX,
+});
+
+const SECURITY_HEADERS = {
+  "X-Content-Type-Options": "nosniff",
+  "X-Frame-Options": "DENY",
+  "Referrer-Policy": "no-referrer",
+  "Permissions-Policy": "geolocation=(), microphone=(), camera=()",
+};
 
 async function ensureSnapshot({ force = false } = {}) {
   if (!cache) {
@@ -45,6 +62,7 @@ function sendJson(res, status, body, extraHeaders = {}) {
   res.writeHead(status, {
     "Content-Type": "application/json; charset=utf-8",
     "Cache-Control": "public, max-age=300",
+    ...SECURITY_HEADERS,
     ...extraHeaders,
   });
   res.end(payload);
@@ -54,11 +72,19 @@ function notFound(res) {
   sendJson(res, 404, { error: "not_found" });
 }
 
+function clientIp(req) {
+  const xf = req.headers["x-forwarded-for"];
+  if (typeof xf === "string" && xf.length > 0) {
+    return xf.split(",")[0].trim();
+  }
+  return req.socket.remoteAddress ?? "unknown";
+}
+
 async function handleLatest(req, res) {
   const snapshot = await ensureSnapshot();
   const etag = etagFor(snapshot);
   if (req.headers["if-none-match"] === etag) {
-    res.writeHead(304, { ETag: etag });
+    res.writeHead(304, { ETag: etag, ...SECURITY_HEADERS });
     res.end();
     return;
   }
@@ -81,9 +107,28 @@ async function handleHealth(_req, res) {
   });
 }
 
-export function startServer(port = DEFAULT_PORT) {
+/**
+ * @param {number} [port]
+ * @param {{ cache?: import('./snapshot.js').RateSnapshot | null }} [opts]
+ */
+export function startServer(port = DEFAULT_PORT, opts = {}) {
+  if (opts.cache !== undefined) {
+    cache = opts.cache;
+  }
+
   const server = createServer(async (req, res) => {
     try {
+      const limited = limiter.check(clientIp(req));
+      if (!limited.ok) {
+        sendJson(
+          res,
+          429,
+          { error: "rate_limited" },
+          { "Retry-After": String(limited.retryAfterSec) },
+        );
+        return;
+      }
+
       const url = new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`);
       if (req.method !== "GET") {
         sendJson(res, 405, { error: "method_not_allowed" });
@@ -100,14 +145,20 @@ export function startServer(port = DEFAULT_PORT) {
       notFound(res);
     } catch (err) {
       console.error(err);
-      sendJson(res, 500, { error: "internal_error", message: String(err.message ?? err) });
+      sendJson(res, 500, { error: "internal_error" });
     }
   });
 
   server.listen(port, () => {
-    console.log(`fxboard-server listening on http://127.0.0.1:${port}`);
+    console.log(`fxrows-server listening on port ${port}`);
   });
   return server;
+}
+
+/** Reset in-memory cache (tests). */
+export function __resetCacheForTests() {
+  cache = null;
+  lastIngestAttempt = 0;
 }
 
 import { pathToFileURL } from "node:url";

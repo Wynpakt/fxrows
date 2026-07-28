@@ -4,20 +4,21 @@ import 'features/convert/convert_controller.dart';
 import 'features/convert/convert_page.dart';
 import 'features/settings/app_settings.dart';
 import 'features/settings/settings_page.dart';
+import 'theme/app_theme.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const FxboardApp());
+  runApp(const FxrowsApp());
 }
 
-class FxboardApp extends StatefulWidget {
-  const FxboardApp({super.key});
+class FxrowsApp extends StatefulWidget {
+  const FxrowsApp({super.key});
 
   @override
-  State<FxboardApp> createState() => _FxboardAppState();
+  State<FxrowsApp> createState() => _FxrowsAppState();
 }
 
-class _FxboardAppState extends State<FxboardApp> {
+class _FxrowsAppState extends State<FxrowsApp> {
   final AppSettings _settings = AppSettings();
   late final ConvertController _controller =
       ConvertController(settings: _settings);
@@ -44,20 +45,8 @@ class _FxboardAppState extends State<FxboardApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'fxrows',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1B4D3E),
-          brightness: Brightness.light,
-        ),
-        useMaterial3: true,
-      ),
-      darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1B4D3E),
-          brightness: Brightness.dark,
-        ),
-        useMaterial3: true,
-      ),
+      theme: buildFxrowsTheme(Brightness.light),
+      darkTheme: buildFxrowsTheme(Brightness.dark),
       routes: {
         '/': (_) => _ready
             ? ConvertPage(controller: _controller)

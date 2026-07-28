@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../legal.dart';
 import 'convert_controller.dart';
 import 'currency_flag.dart';
 
@@ -93,6 +92,9 @@ class _ConvertPageState extends State<ConvertPage> {
       context: context,
       builder: (ctx) {
         var query = '';
+        final media = MediaQuery.sizeOf(ctx);
+        final dialogWidth = (media.width - 48).clamp(280.0, 400.0);
+        final dialogHeight = (media.height * 0.55).clamp(280.0, 480.0);
         return StatefulBuilder(
           builder: (ctx, setLocal) {
             final filtered = available
@@ -101,8 +103,8 @@ class _ConvertPageState extends State<ConvertPage> {
             return AlertDialog(
               title: const Text('Add currency'),
               content: SizedBox(
-                width: 360,
-                height: 420,
+                width: dialogWidth,
+                height: dialogHeight,
                 child: Column(
                   children: [
                     TextField(
@@ -233,7 +235,7 @@ class _ConvertPageState extends State<ConvertPage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$e')),
+          SnackBar(content: Text(ConvertController.humanizeError(e))),
         );
       }
     } finally {
@@ -245,6 +247,7 @@ class _ConvertPageState extends State<ConvertPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('fxrows'),
@@ -277,8 +280,15 @@ class _ConvertPageState extends State<ConvertPage> {
           if (c.errorMessage != null)
             MaterialBanner(
               content: Text(c.errorMessage!),
-              leading: const Icon(Icons.warning_amber),
+              leading: Icon(
+                Icons.warning_amber,
+                color: theme.colorScheme.error,
+              ),
               actions: [
+                TextButton(
+                  onPressed: c.clearError,
+                  child: const Text('Dismiss'),
+                ),
                 TextButton(
                   onPressed: c.refreshRates,
                   child: const Text('Retry'),
@@ -294,11 +304,23 @@ class _ConvertPageState extends State<ConvertPage> {
                 final code = c.currencies[index];
                 final field = _ensureField(code);
                 final focus = _ensureFocus(code);
-                final flag = currencyFlag(code);
-                return Card(
-                  elevation: 0,
-                  color: theme.colorScheme.surfaceContainerHighest.withValues(
-                    alpha: 0.5,
+                final active = c.editingCode == code;
+                final fill = theme.colorScheme.surfaceContainerHighest
+                    .withValues(alpha: active ? 0.85 : 0.45);
+                return AnimatedContainer(
+                  duration: Duration(milliseconds: reduceMotion ? 0 : 180),
+                  curve: Curves.easeOut,
+                  decoration: BoxDecoration(
+                    color: fill,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: active
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.outlineVariant.withValues(
+                              alpha: 0.5,
+                            ),
+                      width: active ? 1.5 : 1,
+                    ),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
@@ -308,66 +330,65 @@ class _ConvertPageState extends State<ConvertPage> {
                     child: Row(
                       children: [
                         SizedBox(
-                          width: 88,
-                          child: Row(
-                            children: [
-                              if (flag.isNotEmpty) ...[
-                                Text(flag, style: const TextStyle(fontSize: 22)),
-                                const SizedBox(width: 6),
-                              ],
-                              Flexible(
-                                child: Text(
-                                  code,
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                          width: 72,
+                          child: Semantics(
+                            label: 'Currency $code',
+                            child: Text(
+                              code,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w700,
                               ),
-                            ],
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         ),
                         Expanded(
-                          child: TextField(
-                            controller: field,
-                            focusNode: focus,
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                              signed: true,
-                            ),
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(r'[0-9+\-*/().,\s]'),
+                          child: Semantics(
+                            label: '$code amount',
+                            textField: true,
+                            child: TextField(
+                              controller: field,
+                              focusNode: focus,
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                decimal: true,
+                                signed: true,
                               ),
-                            ],
-                            decoration: const InputDecoration(
-                              border: InputBorder.none,
-                              hintText: '0 · or 100+50',
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                  RegExp(r'[0-9+\-*/().,\s]'),
+                                ),
+                              ],
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                hintText: '0 or 100+50',
+                              ),
+                              style: theme.textTheme.headlineSmall,
+                              onTap: () {
+                                if (c.editingCode != code) c.setEditing(code);
+                                field.selection = TextSelection(
+                                  baseOffset: 0,
+                                  extentOffset: field.text.length,
+                                );
+                              },
+                              onChanged: (raw) => c.liveAmount(code, raw),
+                              onEditingComplete: () {
+                                c.commitAmount(code, field.text);
+                                c.setEditing(null);
+                                focus.unfocus();
+                              },
+                              onSubmitted: (raw) {
+                                c.commitAmount(code, raw);
+                                c.setEditing(null);
+                              },
                             ),
-                            style: theme.textTheme.headlineSmall,
-                            onTap: () {
-                              if (c.editingCode != code) c.setEditing(code);
-                              field.selection = TextSelection(
-                                baseOffset: 0,
-                                extentOffset: field.text.length,
-                              );
-                            },
-                            onChanged: (raw) => c.liveAmount(code, raw),
-                            onEditingComplete: () {
-                              c.commitAmount(code, field.text);
-                              c.setEditing(null);
-                              focus.unfocus();
-                            },
-                            onSubmitted: (raw) {
-                              c.commitAmount(code, raw);
-                              c.setEditing(null);
-                            },
                           ),
                         ),
                         if (c.isCustom(code))
                           IconButton(
                             tooltip: 'Edit custom rate',
-                            onPressed: () => _addCustomCurrency(existingCode: code),
+                            onPressed: () =>
+                                _addCustomCurrency(existingCode: code),
                             icon: const Icon(Icons.edit_outlined),
                           ),
                         if (c.currencies.length > 2)
@@ -386,39 +407,34 @@ class _ConvertPageState extends State<ConvertPage> {
           SafeArea(
             top: false,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              padding: const EdgeInsets.fromLTRB(16, 0, 72, 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (c.statusMessage != null)
                     Text(
                       c.statusMessage!,
-                      style: theme.textTheme.bodySmall,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: c.usingFallbackRates
+                            ? theme.colorScheme.error
+                            : theme.colorScheme.onSurfaceVariant,
+                        fontWeight: c.usingFallbackRates
+                            ? FontWeight.w600
+                            : FontWeight.w400,
+                      ),
                     ),
-                  if (c.snapshot != null) ...[
-                    const SizedBox(height: 4),
+                  if (c.snapshot != null &&
+                      c.snapshot!.attribution.isNotEmpty) ...[
+                    const SizedBox(height: 2),
                     Text(
                       c.snapshot!.attribution,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
-                    if (c.snapshot!.disclaimer.isNotEmpty)
-                      Text(
-                        c.snapshot!.disclaimer,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
                   ],
-                  const SizedBox(height: 4),
-                  Text(
-                    FxrowsLegal.ratesFooter,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
                 ],
               ),
             ),

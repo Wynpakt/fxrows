@@ -11,7 +11,7 @@ void main() {
   });
 
   testWidgets('app shows loading indicator on boot', (tester) async {
-    await tester.pumpWidget(const FxboardApp());
+    await tester.pumpWidget(const FxrowsApp());
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
   });
 }

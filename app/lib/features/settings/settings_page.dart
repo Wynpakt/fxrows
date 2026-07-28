@@ -141,7 +141,7 @@ class _SettingsPageState extends State<SettingsPage> {
     if (!RegExp(r'^[A-Z]{3,8}$').hasMatch(code) || rate == null || rate <= 0) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Need a 3–8 letter code and positive rate')),
+          const SnackBar(content: Text('Need a 3-8 letter code and positive rate')),
         );
       }
       return;
@@ -162,8 +162,9 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        appBar: AppBar(title: const Text('Settings')),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
     final customCodes = _customRates.keys.toList()..sort();
@@ -180,15 +181,20 @@ class _SettingsPageState extends State<SettingsPage> {
           Text('Rate source', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           ...RatesProviderId.values.map(
-            (id) => ListTile(
-              title: Text(id.label),
-              leading: Icon(
-                _provider == id
-                    ? Icons.radio_button_checked
-                    : Icons.radio_button_off,
-              ),
+            (id) => Semantics(
               selected: _provider == id,
-              onTap: () => setState(() => _provider = id),
+              button: true,
+              label: 'Rate source ${id.label}',
+              child: ListTile(
+                title: Text(id.label),
+                leading: Icon(
+                  _provider == id
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_off,
+                ),
+                selected: _provider == id,
+                onTap: () => setState(() => _provider = id),
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -258,7 +264,7 @@ class _SettingsPageState extends State<SettingsPage> {
           const SizedBox(height: 8),
           if (customCodes.isEmpty)
             Text(
-              'None yet — use Add or the convert screen’s Custom… button.',
+              'None yet. Use Add or the convert screen Custom button.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),

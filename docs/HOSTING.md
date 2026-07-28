@@ -29,6 +29,17 @@ The Flutter app is **not** Dockerized: it ships as platform builds
 5. **TLS / reverse proxy** (Caddy, Traefik, nginx) lives on the VPS outside the
    app image. The container listens on HTTP `:8787`; the proxy terminates
    HTTPS and routes by hostname.
+
+   **Proxy checklist (required in production):**
+   - Terminate TLS; do not expose `:8787` on the public internet without TLS
+   - Forward `X-Forwarded-For` (or equivalent) so the app rate limiter sees the client IP
+   - Optionally add proxy-level rate limits in addition to the app’s soft limit
+     (`120` req/min/IP on `/v1/*`)
+   - Prefer proxy headers for `X-Content-Type-Options`, `X-Frame-Options` /
+     `frame-ancestors`, and `Referrer-Policy` if you strip upstream headers;
+     the Node app also sets these on JSON responses
+   - Health check: `GET /v1/health` (expect `ok` + `has_snapshot`)
+
 6. **Persistent cache** is a host volume (`./data` → `/app/data`), not baked
    into the image.
 

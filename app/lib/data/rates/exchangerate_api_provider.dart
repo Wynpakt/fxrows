@@ -36,13 +36,27 @@ class ExchangeRateApiProvider implements RatesProvider {
       );
     }
 
-    final json = jsonDecode(res.body) as Map<String, dynamic>;
+    Map<String, dynamic> json;
+    try {
+      json = jsonDecode(res.body) as Map<String, dynamic>;
+    } catch (_) {
+      throw RatesException(
+        'Unexpected response from ExchangeRate-API (HTTP ${res.statusCode})',
+        code: 'http_${res.statusCode}',
+      );
+    }
     final result = json['result'] as String?;
     if (result != 'success') {
+      if (res.statusCode != 200 && result == null) {
+        throw RatesException(
+          'ExchangeRate-API error HTTP ${res.statusCode}',
+          code: 'http_${res.statusCode}',
+        );
+      }
       final err = json['error-type'] as String? ?? 'unknown';
       final message = switch (err) {
         'invalid-key' => 'Invalid API key',
-        'inactive-account' => 'Account inactive — confirm your email',
+        'inactive-account' => 'Account inactive: confirm your email',
         'quota-reached' => 'Monthly quota reached',
         _ => 'ExchangeRate-API error: $err',
       };

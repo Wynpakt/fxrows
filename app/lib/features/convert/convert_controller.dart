@@ -24,9 +24,25 @@ class ConvertController extends ChangeNotifier {
   String? statusMessage;
   String? errorMessage;
   bool loading = false;
+  /// True when showing [RateSnapshot.dummy] after a failed fetch.
+  bool usingFallbackRates = false;
   RatesProviderId providerId = RatesProviderId.aggServer;
 
   bool isCustom(String code) => customRates.containsKey(code.toUpperCase());
+
+  void clearError() {
+    if (errorMessage == null) return;
+    errorMessage = null;
+    notifyListeners();
+  }
+
+  static String humanizeError(Object e) {
+    if (e is RatesException) return e.message;
+    final s = e.toString();
+    if (s.startsWith('Exception: ')) return s.substring(11);
+    if (s.startsWith('ArgumentError: ')) return s.substring(15);
+    return 'Something went wrong. Try again.';
+  }
 
   Future<void> init() async {
     currencies = await _settings.visibleCurrencies();
@@ -73,15 +89,21 @@ class ConvertController extends ChangeNotifier {
       final pivot = currencies.first;
       final pivotAmount = amounts[pivot] ?? 100;
       _recomputeFrom(pivot, pivotAmount);
+      usingFallbackRates = false;
       final customNote =
           customRates.isEmpty ? '' : ' · ${customRates.length} custom';
       statusMessage =
           '${next.source} · as of ${next.asOf} · ${merged.rates.length} currencies$customNote';
     } catch (e) {
-      errorMessage = e.toString();
+      errorMessage = humanizeError(e);
       // Keep UI usable with last snapshot or dummy + customs.
       customRates = await _settings.customRates();
       snapshot ??= RateSnapshot.dummy().mergedWith(customRates);
+      usingFallbackRates = snapshot!.source == 'dummy';
+      if (usingFallbackRates) {
+        statusMessage =
+            'Offline fallback rates (not live). Retry when you are online.';
+      }
       if (amounts.values.every((v) => v == 0) && currencies.isNotEmpty) {
         _recomputeFrom(currencies.first, 100);
       }
@@ -111,7 +133,7 @@ class ConvertController extends ChangeNotifier {
   Future<void> addCustomCurrency(String code, double ratePerBase) async {
     final c = code.toUpperCase().trim();
     if (!RegExp(r'^[A-Z]{3,8}$').hasMatch(c)) {
-      throw ArgumentError('Currency code must be 3–8 letters');
+      throw ArgumentError('Currency code must be 3-8 letters');
     }
     if (ratePerBase <= 0) {
       throw ArgumentError('Rate must be positive');

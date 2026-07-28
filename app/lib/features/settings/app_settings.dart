@@ -9,11 +9,15 @@ class AppSettings {
   AppSettings({
     SharedPreferences? prefs,
     FlutterSecureStorage? secure,
+    Map<String, String>? secureMemory,
   })  : _prefs = prefs,
-        _secure = secure ?? const FlutterSecureStorage();
+        _secure = secure ?? const FlutterSecureStorage(),
+        _secureMemory = secureMemory;
 
   SharedPreferences? _prefs;
   final FlutterSecureStorage _secure;
+  /// When non-null (tests), keys are stored here instead of platform secure storage.
+  final Map<String, String>? _secureMemory;
 
   static const _kProvider = 'provider_id';
   static const _kAggUrl = 'agg_base_url';
@@ -113,9 +117,20 @@ class AppSettings {
     await setCustomRates(next);
   }
 
-  Future<String?> exchangeRateApiKey() => _secure.read(key: _kApiKey);
+  Future<String?> exchangeRateApiKey() async {
+    if (_secureMemory != null) return _secureMemory[_kApiKey];
+    return _secure.read(key: _kApiKey);
+  }
 
   Future<void> setExchangeRateApiKey(String? key) async {
+    if (_secureMemory != null) {
+      if (key == null || key.trim().isEmpty) {
+        _secureMemory.remove(_kApiKey);
+      } else {
+        _secureMemory[_kApiKey] = key.trim();
+      }
+      return;
+    }
     if (key == null || key.trim().isEmpty) {
       await _secure.delete(key: _kApiKey);
     } else {
@@ -123,9 +138,20 @@ class AppSettings {
     }
   }
 
-  Future<String?> openExchangeRatesAppId() => _secure.read(key: _kOerAppId);
+  Future<String?> openExchangeRatesAppId() async {
+    if (_secureMemory != null) return _secureMemory[_kOerAppId];
+    return _secure.read(key: _kOerAppId);
+  }
 
   Future<void> setOpenExchangeRatesAppId(String? appId) async {
+    if (_secureMemory != null) {
+      if (appId == null || appId.trim().isEmpty) {
+        _secureMemory.remove(_kOerAppId);
+      } else {
+        _secureMemory[_kOerAppId] = appId.trim();
+      }
+      return;
+    }
     if (appId == null || appId.trim().isEmpty) {
       await _secure.delete(key: _kOerAppId);
     } else {
