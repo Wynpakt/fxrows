@@ -4,7 +4,7 @@ class FxrowsLegal {
 
   /// Public privacy policy (Play Console + in-app). Raw Markdown over HTTPS.
   static const privacyPolicyUrl =
-      'https://raw.githubusercontent.com/goddib/fxboard/main/docs/privacy.md';
+      'https://raw.githubusercontent.com/Wynpakt/fxrows/main/docs/privacy.md';
 
   static const ratesFooter =
       'Rates are informational only — not for transaction settlement. '

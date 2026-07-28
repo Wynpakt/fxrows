@@ -13,7 +13,7 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: goddib/fxboard-server
+  IMAGE_NAME: wynpakt/fxrows-server
 
 jobs:
   changes:

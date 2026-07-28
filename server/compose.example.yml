@@ -1,6 +1,6 @@
 services:
   server:
-    image: ghcr.io/goddib/fxboard-server:latest
+    image: ghcr.io/wynpakt/fxrows-server:latest
     restart: unless-stopped
     ports:
       # Point your reverse proxy at this port, or drop host ports

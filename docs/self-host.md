@@ -39,5 +39,5 @@ ECB updates on TARGET business days around 16:00 CET. A daily job is enough
 if you run without Docker and without relying on the in-process refresh:
 
 ```cron
-5 17 * * 1-5 cd /path/to/fxboard/server && node src/ingest.js
+5 17 * * 1-5 cd /path/to/fxrows/server && node src/ingest.js
 ```

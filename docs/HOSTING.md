@@ -1,7 +1,6 @@
 # Aggregation server hosting
 
-The fxboard **aggregation server** (used by the **fxrows** app) runs as a Docker
-container on a VPS.
+The **fxrows** aggregation server runs as a Docker container on a VPS.
 The Flutter app is **not** Dockerized: it ships as platform builds
 (Android / iOS / desktop).
 
@@ -9,7 +8,7 @@ The Flutter app is **not** Dockerized: it ships as platform builds
 
 | Service | Path | Image |
 | --- | --- | --- |
-| Aggregation API | `server/` | `ghcr.io/goddib/fxboard-server` |
+| Aggregation API | `server/` | `ghcr.io/wynpakt/fxrows-server` |
 
 ## Hard rules
 
@@ -51,7 +50,7 @@ as `compose.yml` (adjust ports/networks for your proxy):
 ```yaml
 services:
   server:
-    image: ghcr.io/goddib/fxboard-server:latest
+    image: ghcr.io/wynpakt/fxrows-server:latest
     restart: unless-stopped
     ports:
       - "8787:8787"
