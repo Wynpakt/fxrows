@@ -1,7 +1,7 @@
-# Aggregation server hosting (optional)
+# Aggregation server hosting (optional / not used by the app)
 
-The **fxrows** aggregation server is **optional** — the Flutter app defaults to
-direct ECB downloads. If you self-host the aggregator, it runs as a Docker
+The Flutter app defaults to direct ECB downloads and does **not** call this
+server. If you still want to run the aggregator package, it runs as a Docker
 container on a VPS. The Flutter app is **not** Dockerized: it ships as platform
 builds (Android / iOS / desktop).
 

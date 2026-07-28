@@ -47,7 +47,6 @@ class ConvertController extends ChangeNotifier {
   Future<void> init() async {
     currencies = await _settings.visibleCurrencies();
     providerId = await _settings.providerId();
-    _repository.aggBaseUrl = await _settings.aggBaseUrl();
     customRates = await _settings.customRates();
     for (final c in currencies) {
       amounts.putIfAbsent(c, () => c == currencies.first ? 100 : 0);
@@ -70,7 +69,6 @@ class ConvertController extends ChangeNotifier {
     notifyListeners();
     try {
       providerId = await _settings.providerId();
-      _repository.aggBaseUrl = await _settings.aggBaseUrl();
       customRates = await _settings.customRates();
       final eraKey = await _settings.exchangeRateApiKey();
       final oerId = await _settings.openExchangeRatesAppId();

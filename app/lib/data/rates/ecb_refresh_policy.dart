@@ -87,7 +87,7 @@ bool shouldRefreshEcb({
   return false;
 }
 
-/// BYO / aggregator: refresh when missing or older than [minAge].
+/// BYO providers: refresh when missing or older than [minAge].
 bool shouldRefreshThrottled({
   required RateSnapshot? cached,
   required DateTime nowUtc,

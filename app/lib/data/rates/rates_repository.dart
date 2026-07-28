@@ -1,6 +1,5 @@
 import 'package:http/http.dart' as http;
 
-import 'agg_server_provider.dart';
 import 'ecb_direct_provider.dart';
 import 'ecb_refresh_policy.dart';
 import 'exchangerate_api_provider.dart';
@@ -11,10 +10,6 @@ import 'rates_provider.dart';
 
 class RatesRepository {
   RatesRepository({
-    this.aggBaseUrl = const String.fromEnvironment(
-      'FXROWS_AGG_URL',
-      defaultValue: 'https://fxrows.wynpakt.com',
-    ),
     http.Client? client,
     RateSnapshotCache? cache,
     DateTime Function()? clock,
@@ -22,7 +17,6 @@ class RatesRepository {
         _cache = cache ?? RateSnapshotCache(),
         _clock = clock ?? DateTime.now;
 
-  String aggBaseUrl;
   final http.Client? _client;
   final RateSnapshotCache _cache;
   final DateTime Function() _clock;
@@ -47,8 +41,7 @@ class RatesRepository {
           force: forceRefresh,
         ),
       RatesProviderId.exchangeRateApi ||
-      RatesProviderId.openExchangeRates ||
-      RatesProviderId.aggServer =>
+      RatesProviderId.openExchangeRates =>
         shouldRefreshThrottled(
           cached: cached,
           nowUtc: now,
@@ -65,10 +58,6 @@ class RatesRepository {
     try {
       final provider = switch (providerId) {
         RatesProviderId.ecbDirect => EcbDirectProvider(client: client),
-        RatesProviderId.aggServer => AggServerProvider(
-            baseUrl: aggBaseUrl,
-            client: client,
-          ),
         RatesProviderId.exchangeRateApi => ExchangeRateApiProvider(
             apiKey: exchangeRateApiKey ?? '',
             client: client,

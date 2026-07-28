@@ -34,7 +34,7 @@ Calm, precise, spare. Quiet confidence over spectacle. Numbers first.
 2. **Numbers earn the hierarchy.** Amounts dominate; chrome stays quiet.
 3. **Source honesty.** Always show where rates came from and when; never hide fallbacks.
 4. **On-device trust.** BYO keys never leave the device; default ECB path talks
-   only to the ECB (optional self-hosted aggregator is Advanced-only).
+   only to the ECB.
 5. **Earned familiarity.** Material product patterns users already know; craft in
    type, spacing, and states, not novelty chrome.
 

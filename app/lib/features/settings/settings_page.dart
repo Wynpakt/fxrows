@@ -23,13 +23,11 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   RatesProviderId _provider = RatesProviderId.ecbDirect;
-  final _aggUrl = TextEditingController();
   final _eraKey = TextEditingController();
   final _oerAppId = TextEditingController();
   Map<String, double> _customRates = {};
   bool _loading = true;
   bool _obscure = true;
-  bool _showAdvanced = false;
 
   @override
   void initState() {
@@ -39,24 +37,20 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _load() async {
     final provider = await widget.settings.providerId();
-    final url = await widget.settings.aggBaseUrl();
     final era = await widget.settings.exchangeRateApiKey();
     final oer = await widget.settings.openExchangeRatesAppId();
     final custom = await widget.settings.customRates();
     setState(() {
       _provider = provider;
-      _aggUrl.text = url;
       _eraKey.text = era ?? '';
       _oerAppId.text = oer ?? '';
       _customRates = custom;
-      _showAdvanced = provider == RatesProviderId.aggServer;
       _loading = false;
     });
   }
 
   @override
   void dispose() {
-    _aggUrl.dispose();
     _eraKey.dispose();
     _oerAppId.dispose();
     super.dispose();
@@ -64,7 +58,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _save() async {
     await widget.settings.setProviderId(_provider);
-    await widget.settings.setAggBaseUrl(_aggUrl.text);
     // Persist both keys when non-empty so switching providers keeps credentials.
     if (_eraKey.text.trim().isNotEmpty) {
       await widget.settings.setExchangeRateApiKey(_eraKey.text);
@@ -161,9 +154,6 @@ class _SettingsPageState extends State<SettingsPage> {
     widget.onChanged();
   }
 
-  Iterable<RatesProviderId> get _primaryProviders => RatesProviderId.values
-      .where((id) => !id.isAdvanced);
-
   @override
   Widget build(BuildContext context) {
     if (_loading) {
@@ -185,7 +175,7 @@ class _SettingsPageState extends State<SettingsPage> {
         children: [
           Text('Rate source', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
-          ..._primaryProviders.map(
+          ...RatesProviderId.values.map(
             (id) => Semantics(
               selected: _provider == id,
               button: true,
@@ -202,43 +192,6 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ),
           ),
-          const SizedBox(height: 8),
-          ExpansionTile(
-            initiallyExpanded: _showAdvanced,
-            title: const Text('Advanced'),
-            subtitle: const Text('Optional self-hosted aggregator'),
-            children: [
-              Semantics(
-                selected: _provider == RatesProviderId.aggServer,
-                button: true,
-                label: 'Rate source ${RatesProviderId.aggServer.label}',
-                child: ListTile(
-                  title: Text(RatesProviderId.aggServer.label),
-                  leading: Icon(
-                    _provider == RatesProviderId.aggServer
-                        ? Icons.radio_button_checked
-                        : Icons.radio_button_off,
-                  ),
-                  selected: _provider == RatesProviderId.aggServer,
-                  onTap: () =>
-                      setState(() => _provider = RatesProviderId.aggServer),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                child: TextField(
-                  controller: _aggUrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Aggregator URL',
-                    helperText:
-                        'Only used when the self-hosted aggregator is selected',
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.url,
-                ),
-              ),
-            ],
-          ),
           const SizedBox(height: 16),
           if (_provider == RatesProviderId.exchangeRateApi)
             TextField(
@@ -246,8 +199,7 @@ class _SettingsPageState extends State<SettingsPage> {
               obscureText: _obscure,
               decoration: InputDecoration(
                 labelText: 'ExchangeRate-API key',
-                helperText:
-                    'Stored only on this device. Never sent to any fxrows server.',
+                helperText: 'Stored only on this device.',
                 border: const OutlineInputBorder(),
                 suffixIcon: IconButton(
                   icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
@@ -328,7 +280,8 @@ class _SettingsPageState extends State<SettingsPage> {
             'Default path downloads ECB euro reference rates directly to this '
             'device and caches them for offline use (free reuse with attribution). '
             'Optional BYO providers call their APIs from the device for a wider '
-            'currency set. fxrows does not run an analytics or activity ping.',
+            'currency set. fxrows does not contact wynpakt servers and does not '
+            'run analytics or activity pings.',
             style: Theme.of(context).textTheme.bodySmall,
           ),
           const SizedBox(height: 8),

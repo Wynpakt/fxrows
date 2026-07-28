@@ -13,7 +13,6 @@ name: Android APK Release
 #
 # Optional repo variables (Settings → Actions → Variables):
 #   ANDROID_VERSION_EPOCH – subtract from run_number for 0.1.x display (default 0)
-#   FXROWS_AGG_URL – optional default for Advanced self-hosted aggregator only
 #
 # Required secrets for signing (stable Obtainium updates, keystore never committed):
 #   ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD
@@ -90,20 +89,16 @@ jobs:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-          FXROWS_AGG_URL: ${{ vars.FXROWS_AGG_URL }}
         run: |
           set -euo pipefail
           if [ -z "${ANDROID_KEYSTORE_PASSWORD:-}" ] || [ -z "${ANDROID_KEY_ALIAS:-}" ] || [ -z "${ANDROID_KEY_PASSWORD:-}" ]; then
             echo "::error::ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, and ANDROID_KEY_PASSWORD secrets are required."
             exit 1
           fi
-          AGG_URL="${FXROWS_AGG_URL:-https://fxrows.wynpakt.com}"
-          echo "Baking FXROWS_AGG_URL=${AGG_URL}"
           COMMON=(
             --release
             --build-name="${ANDROID_VERSION_NAME}"
             --build-number="${ANDROID_VERSION_CODE}"
-            --dart-define=FXROWS_AGG_URL="${AGG_URL}"
           )
           flutter build apk "${COMMON[@]}"
           flutter build appbundle "${COMMON[@]}"

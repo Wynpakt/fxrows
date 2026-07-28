@@ -20,20 +20,12 @@ class AppSettings {
   final Map<String, String>? _secureMemory;
 
   static const _kProvider = 'provider_id';
-  static const _kAggUrl = 'agg_base_url';
   static const _kCurrencies = 'visible_currencies';
   static const _kApiKey = 'exchangerate_api_key';
   static const _kOerAppId = 'open_exchange_rates_app_id';
   static const _kCustomRates = 'custom_rates';
 
   static const defaultCurrencies = ['EUR', 'USD', 'GBP', 'GEL', 'CHF'];
-
-  /// Optional self-hosted aggregator URL (advanced provider only).
-  /// Override at build time with `--dart-define=FXROWS_AGG_URL=…`.
-  static const defaultAggUrl = String.fromEnvironment(
-    'FXROWS_AGG_URL',
-    defaultValue: 'https://fxrows.wynpakt.com',
-  );
 
   Future<void> _ensurePrefs() async {
     _prefs ??= await SharedPreferences.getInstance();
@@ -42,7 +34,13 @@ class AppSettings {
   Future<RatesProviderId> providerId() async {
     await _ensurePrefs();
     final raw = _prefs!.getString(_kProvider);
-    if (raw == null || raw.isEmpty) return RatesProviderId.ecbDirect;
+    if (raw == null || raw.isEmpty || raw == 'aggServer') {
+      // Legacy aggregator preference → ECB direct (no wynpakt server).
+      if (raw == 'aggServer') {
+        await _prefs!.setString(_kProvider, RatesProviderId.ecbDirect.name);
+      }
+      return RatesProviderId.ecbDirect;
+    }
     return RatesProviderId.values.firstWhere(
       (e) => e.name == raw,
       orElse: () => RatesProviderId.ecbDirect,
@@ -52,16 +50,6 @@ class AppSettings {
   Future<void> setProviderId(RatesProviderId id) async {
     await _ensurePrefs();
     await _prefs!.setString(_kProvider, id.name);
-  }
-
-  Future<String> aggBaseUrl() async {
-    await _ensurePrefs();
-    return _prefs!.getString(_kAggUrl) ?? defaultAggUrl;
-  }
-
-  Future<void> setAggBaseUrl(String url) async {
-    await _ensurePrefs();
-    await _prefs!.setString(_kAggUrl, url.trim());
   }
 
   Future<List<String>> visibleCurrencies() async {

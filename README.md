@@ -2,8 +2,8 @@
 
 Open-source **multi-currency converter** (Flutter). Default rates come **directly
 from the ECB** (cached on device for offline use). No API key and no wynpakt
-server required. An optional thin aggregation server lives in `server/` for
-self-hosters.
+server in the shipping app. An optional aggregation server package lives in
+`server/` for experiments only (not wired into the client).
 
 > Repo: [Wynpakt/fxrows](https://github.com/Wynpakt/fxrows) · local `https://github.com/Wynpakt/fxrows`.
 
@@ -17,19 +17,18 @@ simple expressions (`100+50`, `200-30`, `2*3+4`).
 
 - **Default rates:** ECB euro reference rates fetched on-device (legal free reuse with attribution), smart daily refresh, offline cache
 - **Optional BYO keys:** ExchangeRate-API or Open Exchange Rates from the device only (wider set / own quota)
-- **Optional Advanced:** self-hosted aggregator URL
 - **Multi-currency grid** with pivot sync
 - **Inline calculator** in amount fields
 - **Flags** next to currency codes; optional **custom currencies** with manual rates
 - Platforms: Android, iOS, Linux, macOS, Windows (Web out of scope)
-- **No** analytics / activity ping to wynpakt
+- **No** analytics / activity ping / default connection to wynpakt servers
 
 ## Repository layout
 
 ```
 fxrows/
-  app/       Flutter client (default: direct ECB)
-  server/    Optional Node.js aggregation API (Docker/GHCR)
+  app/       Flutter client (direct ECB)
+  server/    Optional Node.js aggregation API (not used by the app today)
   docs/      Data-source policy, hosting, privacy, Play Store notes
 ```
 
@@ -41,11 +40,9 @@ flutter pub get
 flutter run -d linux   # or macos / windows / a connected device
 ```
 
-Default: HTTPS to the ECB daily XML feed; snapshot cached locally. Optional
-self-hosted aggregator: Settings → Advanced (see
-[docs/self-host.md](docs/self-host.md)).
+Default: HTTPS to the ECB daily XML feed; snapshot cached locally.
 
-## Optional — aggregation server
+## Optional — aggregation server (repo only)
 
 ```bash
 cd server
@@ -54,8 +51,7 @@ npm start            # http://127.0.0.1:8787
 curl http://127.0.0.1:8787/v1/latest | head
 ```
 
-Production reference: **https://fxrows.wynpakt.com** (Docker/GHCR on VPS). See
-[docs/HOSTING.md](docs/HOSTING.md) and [docs/self-host.md](docs/self-host.md).
+See [docs/HOSTING.md](docs/HOSTING.md) and [docs/self-host.md](docs/self-host.md).
 
 ## Android APK / Obtainium
 
@@ -106,7 +102,6 @@ Optional variables:
 | Variable | Purpose |
 | --- | --- |
 | `ANDROID_VERSION_EPOCH` | Subtract from `run_number` for `0.1.x` display (default `0`) |
-| `FXROWS_AGG_URL` | Optional default URL for the **Advanced** self-hosted aggregator provider only |
 
 For local signed builds, create `app/android/keystore.properties` (git-ignored):
 

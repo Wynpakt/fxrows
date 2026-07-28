@@ -4,8 +4,6 @@ enum RatesProviderId {
   ecbDirect,
   exchangeRateApi,
   openExchangeRates,
-  /// Optional self-hosted fxrows aggregation server (advanced).
-  aggServer,
 }
 
 extension RatesProviderIdX on RatesProviderId {
@@ -13,14 +11,11 @@ extension RatesProviderIdX on RatesProviderId {
         RatesProviderId.ecbDirect => 'ECB (direct, offline cache)',
         RatesProviderId.exchangeRateApi => 'ExchangeRate-API (BYO key)',
         RatesProviderId.openExchangeRates => 'Open Exchange Rates (BYO App ID)',
-        RatesProviderId.aggServer => 'Self-hosted aggregator (optional)',
       };
 
   bool get isByoKey =>
       this == RatesProviderId.exchangeRateApi ||
       this == RatesProviderId.openExchangeRates;
-
-  bool get isAdvanced => this == RatesProviderId.aggServer;
 }
 
 abstract class RatesProvider {
