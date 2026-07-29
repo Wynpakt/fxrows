@@ -98,3 +98,25 @@ bool shouldRefreshThrottled({
   if (cached == null) return true;
   return nowUtc.toUtc().difference(cached.fetchedAt.toUtc()) >= minAge;
 }
+
+/// Frankfurter (and similar daily CB aggregates): refresh when [asOf] lags
+/// today's UTC calendar date, or when the cache is older than [maxAge].
+bool shouldRefreshDailyRates({
+  required RateSnapshot? cached,
+  required DateTime nowUtc,
+  Duration maxAge = const Duration(hours: 20),
+  bool force = false,
+}) {
+  if (force) return true;
+  if (cached == null || cached.asOf.isEmpty) return true;
+
+  final asOf = DateTime.tryParse(cached.asOf);
+  if (asOf == null) return true;
+
+  final now = nowUtc.toUtc();
+  final today = DateTime.utc(now.year, now.month, now.day);
+  final asOfDate = DateTime.utc(asOf.year, asOf.month, asOf.day);
+  if (asOfDate.isBefore(today)) return true;
+
+  return now.difference(cached.fetchedAt.toUtc()) >= maxAge;
+}

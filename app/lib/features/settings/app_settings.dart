@@ -34,16 +34,15 @@ class AppSettings {
   Future<RatesProviderId> providerId() async {
     await _ensurePrefs();
     final raw = _prefs!.getString(_kProvider);
+    // Fresh install or legacy aggregator preference → Frankfurter default.
+    // Explicit ecbDirect / BYO selections are preserved.
     if (raw == null || raw.isEmpty || raw == 'aggServer') {
-      // Legacy aggregator preference → ECB direct (no wynpakt server).
-      if (raw == 'aggServer') {
-        await _prefs!.setString(_kProvider, RatesProviderId.ecbDirect.name);
-      }
-      return RatesProviderId.ecbDirect;
+      await _prefs!.setString(_kProvider, RatesProviderId.frankfurter.name);
+      return RatesProviderId.frankfurter;
     }
     return RatesProviderId.values.firstWhere(
       (e) => e.name == raw,
-      orElse: () => RatesProviderId.ecbDirect,
+      orElse: () => RatesProviderId.frankfurter,
     );
   }
 

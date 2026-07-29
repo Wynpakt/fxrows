@@ -1,6 +1,9 @@
 import 'rate_snapshot.dart';
 
 enum RatesProviderId {
+  /// Default: Frankfurter v2 (central-bank aggregation, no key).
+  frankfurter,
+  /// Advanced: unmodified ECB eurofxref XML.
   ecbDirect,
   exchangeRateApi,
   openExchangeRates,
@@ -8,10 +11,17 @@ enum RatesProviderId {
 
 extension RatesProviderIdX on RatesProviderId {
   String get label => switch (this) {
+        RatesProviderId.frankfurter => 'Frankfurter (central banks)',
         RatesProviderId.ecbDirect => 'ECB (direct, offline cache)',
         RatesProviderId.exchangeRateApi => 'ExchangeRate-API (BYO key)',
         RatesProviderId.openExchangeRates => 'Open Exchange Rates (BYO App ID)',
       };
+
+  /// Shown under Settings → Advanced (not the primary default).
+  bool get isAdvanced =>
+      this == RatesProviderId.ecbDirect ||
+      this == RatesProviderId.exchangeRateApi ||
+      this == RatesProviderId.openExchangeRates;
 
   bool get isByoKey =>
       this == RatesProviderId.exchangeRateApi ||

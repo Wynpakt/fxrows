@@ -1,9 +1,9 @@
 # Aggregation server hosting (optional / not used by the app)
 
-The Flutter app defaults to direct ECB downloads and does **not** call this
-server. If you still want to run the aggregator package, it runs as a Docker
-container on a VPS. The Flutter app is **not** Dockerized: it ships as platform
-builds (Android / iOS / desktop).
+The Flutter app defaults to Frankfurter downloads and does **not** call this
+server. If you still want to run the aggregator package (e.g. as a fallback), it
+runs as a Docker container on a VPS. The Flutter app is **not** Dockerized: it
+ships as platform builds (Android / iOS / desktop).
 
 ## Image
 

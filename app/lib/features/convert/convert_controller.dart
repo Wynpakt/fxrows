@@ -26,7 +26,7 @@ class ConvertController extends ChangeNotifier {
   bool loading = false;
   /// True when showing [RateSnapshot.dummy] after a failed fetch with no cache.
   bool usingFallbackRates = false;
-  RatesProviderId providerId = RatesProviderId.ecbDirect;
+  RatesProviderId providerId = RatesProviderId.frankfurter;
 
   bool isCustom(String code) => customRates.containsKey(code.toUpperCase());
 

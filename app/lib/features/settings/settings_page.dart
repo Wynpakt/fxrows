@@ -22,12 +22,13 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  RatesProviderId _provider = RatesProviderId.ecbDirect;
+  RatesProviderId _provider = RatesProviderId.frankfurter;
   final _eraKey = TextEditingController();
   final _oerAppId = TextEditingController();
   Map<String, double> _customRates = {};
   bool _loading = true;
   bool _obscure = true;
+  bool _advancedExpanded = false;
 
   @override
   void initState() {
@@ -45,6 +46,7 @@ class _SettingsPageState extends State<SettingsPage> {
       _eraKey.text = era ?? '';
       _oerAppId.text = oer ?? '';
       _customRates = custom;
+      _advancedExpanded = provider.isAdvanced;
       _loading = false;
     });
   }
@@ -175,53 +177,94 @@ class _SettingsPageState extends State<SettingsPage> {
         children: [
           Text('Rate source', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
-          ...RatesProviderId.values.map(
-            (id) => Semantics(
-              selected: _provider == id,
-              button: true,
-              label: 'Rate source ${id.label}',
-              child: ListTile(
-                title: Text(id.label),
-                leading: Icon(
-                  _provider == id
-                      ? Icons.radio_button_checked
-                      : Icons.radio_button_off,
-                ),
-                selected: _provider == id,
-                onTap: () => setState(() => _provider = id),
+          Text(
+            'Default needs no API key. Rates are cached on this device.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 8),
+          Semantics(
+            selected: _provider == RatesProviderId.frankfurter,
+            button: true,
+            label: 'Rate source ${RatesProviderId.frankfurter.label}',
+            child: ListTile(
+              title: Text(RatesProviderId.frankfurter.label),
+              subtitle: const Text(
+                'Open-source aggregation of central-bank rates '
+                '(api.frankfurter.dev; may use Cloudflare)',
               ),
+              leading: Icon(
+                _provider == RatesProviderId.frankfurter
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_off,
+              ),
+              selected: _provider == RatesProviderId.frankfurter,
+              onTap: () => setState(() => _provider = RatesProviderId.frankfurter),
             ),
           ),
-          const SizedBox(height: 16),
-          if (_provider == RatesProviderId.exchangeRateApi)
-            TextField(
-              controller: _eraKey,
-              obscureText: _obscure,
-              decoration: InputDecoration(
-                labelText: 'ExchangeRate-API key',
-                helperText: 'Stored only on this device.',
-                border: const OutlineInputBorder(),
-                suffixIcon: IconButton(
-                  icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
-                  onPressed: () => setState(() => _obscure = !_obscure),
+          ExpansionTile(
+            initiallyExpanded: _advancedExpanded,
+            onExpansionChanged: (open) =>
+                setState(() => _advancedExpanded = open),
+            title: const Text('Advanced'),
+            subtitle: const Text('ECB direct or bring-your-own API'),
+            children: [
+              for (final id in RatesProviderId.values.where((e) => e.isAdvanced))
+                Semantics(
+                  selected: _provider == id,
+                  button: true,
+                  label: 'Rate source ${id.label}',
+                  child: ListTile(
+                    title: Text(id.label),
+                    leading: Icon(
+                      _provider == id
+                          ? Icons.radio_button_checked
+                          : Icons.radio_button_off,
+                    ),
+                    selected: _provider == id,
+                    onTap: () => setState(() => _provider = id),
+                  ),
                 ),
-              ),
-            ),
-          if (_provider == RatesProviderId.openExchangeRates)
-            TextField(
-              controller: _oerAppId,
-              obscureText: _obscure,
-              decoration: InputDecoration(
-                labelText: 'Open Exchange Rates App ID',
-                helperText:
-                    'Stored only on this device. Free plan uses USD as base.',
-                border: const OutlineInputBorder(),
-                suffixIcon: IconButton(
-                  icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
-                  onPressed: () => setState(() => _obscure = !_obscure),
+              if (_provider == RatesProviderId.exchangeRateApi)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  child: TextField(
+                    controller: _eraKey,
+                    obscureText: _obscure,
+                    decoration: InputDecoration(
+                      labelText: 'ExchangeRate-API key',
+                      helperText: 'Stored only on this device.',
+                      border: const OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscure ? Icons.visibility : Icons.visibility_off,
+                        ),
+                        onPressed: () => setState(() => _obscure = !_obscure),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ),
+              if (_provider == RatesProviderId.openExchangeRates)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  child: TextField(
+                    controller: _oerAppId,
+                    obscureText: _obscure,
+                    decoration: InputDecoration(
+                      labelText: 'Open Exchange Rates App ID',
+                      helperText:
+                          'Stored only on this device. Free plan uses USD as base.',
+                      border: const OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscure ? Icons.visibility : Icons.visibility_off,
+                        ),
+                        onPressed: () => setState(() => _obscure = !_obscure),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
           const SizedBox(height: 24),
           Row(
             children: [
@@ -240,7 +283,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           Text(
             'Self-maintained rates as units per 1 provider base '
-            '(ECB: usually EUR; Open Exchange Rates free: USD). '
+            '(Frankfurter/ECB: usually EUR; Open Exchange Rates free: USD). '
             'They merge with live rates and stay on this device.',
             style: Theme.of(context).textTheme.bodySmall,
           ),
@@ -277,11 +320,11 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           const SizedBox(height: 24),
           Text(
-            'Default path downloads ECB euro reference rates directly to this '
-            'device and caches them for offline use (free reuse with attribution). '
-            'Optional BYO providers call their APIs from the device for a wider '
-            'currency set. fxrows does not contact wynpakt servers and does not '
-            'run analytics or activity pings.',
+            'Default path downloads blended central-bank rates via Frankfurter '
+            '(open source; public API may use Cloudflare) and caches them for '
+            'offline use. Advanced: ECB direct or BYO APIs from this device. '
+            'fxrows does not contact wynpakt servers and does not run analytics '
+            'or activity pings.',
             style: Theme.of(context).textTheme.bodySmall,
           ),
           const SizedBox(height: 8),

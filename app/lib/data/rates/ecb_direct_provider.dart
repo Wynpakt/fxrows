@@ -5,7 +5,7 @@ import 'parse_ecb.dart';
 import 'rate_snapshot.dart';
 import 'rates_provider.dart';
 
-/// Default provider: fetch ECB eurofxref-daily.xml directly from the device.
+/// Advanced provider: fetch ECB eurofxref-daily.xml directly from the device.
 class EcbDirectProvider implements RatesProvider {
   EcbDirectProvider({
     http.Client? client,

@@ -8,7 +8,7 @@ flutter test
 flutter run -d linux   # or android / macos / windows
 ```
 
-Default rates: **ECB direct** (on-device cache). Optional BYO keys in Settings.
-The app does not contact wynpakt aggregation servers.
+Default rates: **Frankfurter** (on-device cache). Advanced: ECB direct or BYO
+keys in Settings. The app does not contact wynpakt aggregation servers.
 
 Privacy: [docs/privacy.md](../docs/privacy.md) · Play: [docs/PLAY_STORE.md](../docs/PLAY_STORE.md)

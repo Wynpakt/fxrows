@@ -1,9 +1,11 @@
 # fxrows
 
-Open-source **multi-currency converter** (Flutter). Default rates come **directly
-from the ECB** (cached on device for offline use). No API key and no wynpakt
-server in the shipping app. An optional aggregation server package lives in
-`server/` for experiments only (not wired into the client).
+Open-source **multi-currency converter** (Flutter). Default rates come from
+**[Frankfurter](https://frankfurter.dev/)** (open-source central-bank
+aggregation, cached on device). No API key and no wynpakt server in the shipping
+app. Advanced settings: ECB direct or BYO commercial APIs. An optional
+aggregation server package lives in `server/` for experiments / fallback only
+(not wired into the client).
 
 > Repo: [Wynpakt/fxrows](https://github.com/Wynpakt/fxrows) · local `https://github.com/Wynpakt/fxrows`.
 
@@ -15,8 +17,8 @@ simple expressions (`100+50`, `200-30`, `2*3+4`).
 
 ## Features
 
-- **Default rates:** ECB euro reference rates fetched on-device (legal free reuse with attribution), smart daily refresh, offline cache
-- **Optional BYO keys:** ExchangeRate-API or Open Exchange Rates from the device only (wider set / own quota)
+- **Default rates:** Frankfurter v2 (many currencies, no key), daily-ish refresh, offline cache
+- **Advanced:** ECB euro reference rates direct, or BYO ExchangeRate-API / Open Exchange Rates
 - **Multi-currency grid** with pivot sync
 - **Inline calculator** in amount fields
 - **Flags** next to currency codes; optional **custom currencies** with manual rates
@@ -27,7 +29,7 @@ simple expressions (`100+50`, `200-30`, `2*3+4`).
 
 ```
 fxrows/
-  app/       Flutter client (direct ECB)
+  app/       Flutter client (Frankfurter default)
   server/    Optional Node.js aggregation API (not used by the app today)
   docs/      Data-source policy, hosting, privacy, Play Store notes
 ```
@@ -40,7 +42,7 @@ flutter pub get
 flutter run -d linux   # or macos / windows / a connected device
 ```
 
-Default: HTTPS to the ECB daily XML feed; snapshot cached locally.
+Default: HTTPS to `api.frankfurter.dev`; snapshot cached locally.
 
 ## Optional — aggregation server (repo only)
 
@@ -129,5 +131,6 @@ Planning/implementation context for agents and future you: [docs/HANDOFF.md](doc
 
 Application and server code: [MIT](LICENSE).
 
-ECB rate data remain subject to ECB/ESCB reuse conditions — see
-[docs/data-sources.md](docs/data-sources.md). Rates are informational only.
+Default rates via Frankfurter; ECB advanced path subject to ECB/ESCB reuse
+conditions — see [docs/data-sources.md](docs/data-sources.md). Rates are
+informational only.

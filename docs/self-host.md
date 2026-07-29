@@ -1,8 +1,8 @@
 # Self-host the aggregation server (optional / not used by the app)
 
-The Flutter app fetches ECB rates **directly** and does not call this server.
+The Flutter app defaults to **Frankfurter** and does not call this server.
 `server/` remains in the repo for self-host experiments or a possible future
-in-app option.
+fallback if Frankfurter’s public host disappears.
 
 ## Production (if you host one anyway)
 
