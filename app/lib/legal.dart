@@ -2,9 +2,8 @@
 class FxrowsLegal {
   FxrowsLegal._();
 
-  /// Public privacy policy (Play Console + in-app). Raw Markdown over HTTPS.
-  static const privacyPolicyUrl =
-      'https://raw.githubusercontent.com/Wynpakt/fxrows/main/docs/privacy.md';
+  /// Public privacy policy (Play Console + in-app). Hosted HTML on wynpakt.com.
+  static const privacyPolicyUrl = 'https://wynpakt.com/app/fxrows/privacy/';
 
   static const ratesFooter =
       'Rates are informational only, not for transaction settlement. '

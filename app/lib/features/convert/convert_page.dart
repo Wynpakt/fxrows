@@ -304,6 +304,7 @@ class _ConvertPageState extends State<ConvertPage> {
                 final code = c.currencies[index];
                 final field = _ensureField(code);
                 final focus = _ensureFocus(code);
+                final flag = currencyFlag(code);
                 final active = c.editingCode == code;
                 final fill = theme.colorScheme.surfaceContainerHighest
                     .withValues(alpha: active ? 0.85 : 0.45);
@@ -330,15 +331,31 @@ class _ConvertPageState extends State<ConvertPage> {
                     child: Row(
                       children: [
                         SizedBox(
-                          width: 72,
+                          width: 88,
                           child: Semantics(
                             label: 'Currency $code',
-                            child: Text(
-                              code,
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w700,
-                              ),
-                              overflow: TextOverflow.ellipsis,
+                            child: Row(
+                              children: [
+                                if (flag.isNotEmpty) ...[
+                                  ExcludeSemantics(
+                                    child: Text(
+                                      flag,
+                                      style: const TextStyle(fontSize: 22),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                ],
+                                Flexible(
+                                  child: Text(
+                                    code,
+                                    style: theme.textTheme.titleMedium
+                                        ?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),

@@ -26,7 +26,7 @@ Calm, precise, spare. Quiet confidence over spectacle. Numbers first.
 
 - Navy-and-gold “fintech premium” dashboards
 - Purple/cyan AI-SaaS converter landings
-- Emoji-heavy currency pickers and decorative card stacks
+- Emoji-only currency pickers without ISO codes, and decorative card stacks
 - Busy banking apps with metric theater and fake live tickers
 
 ## Design Principles

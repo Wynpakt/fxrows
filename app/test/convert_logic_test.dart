@@ -67,11 +67,18 @@ void main() {
     });
   });
 
-  group('currencyLabel', () {
-    test('uppercases codes without emoji', () {
-      expect(currencyLabel('eur'), 'EUR');
-      expect(currencyLabel('USD'), 'USD');
-      expect(currencyLabel('gel'), 'GEL');
+  group('currencyFlag', () {
+    test('known codes', () {
+      expect(currencyFlag('EUR'), '🇪🇺');
+      expect(currencyFlag('usd'), '🇺🇸');
+      expect(currencyFlag('GEL'), '🇬🇪');
+    });
+
+    test('unknown is empty; label is code only', () {
+      expect(currencyFlag('ZZZ'), '');
+      expect(currencyLabel('ZZZ'), 'ZZZ');
+      expect(currencyLabel('eur'), startsWith('🇪🇺'));
+      expect(currencyLabel('eur'), contains('EUR'));
     });
   });
 

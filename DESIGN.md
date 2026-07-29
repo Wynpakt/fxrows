@@ -50,10 +50,11 @@ slightly stronger surface tint. Card radius ≤12.
 - Highlight the active pivot row clearly
 - Mark offline/dummy fallback rates in status
 - Keep legal/disclaimer readable but secondary
+- Flag emoji decorative beside the ISO code for quick scan; code stays the semantic label
 
 **Don't**
 
-- Flag emoji as the primary currency affordance
+- Rely on flag emoji alone without a readable currency code
 - Em-dashes (`—`) or en-dashes (`–`) in visible UI copy
 - Inter/Roboto/Open Sans by reflex
 - Side-stripe accent borders, ghost-cards, or ≥24px radii
