@@ -7,7 +7,7 @@ app. Advanced settings: ECB direct or BYO commercial APIs. An optional
 aggregation server package lives in `server/` for experiments / fallback only
 (not wired into the client).
 
-> Repo: [Wynpakt/fxrows](https://github.com/Wynpakt/fxrows) · local `https://github.com/Wynpakt/fxrows`.
+> Repo: [Wynpakt/fxrows](https://github.com/Wynpakt/fxrows).
 
 ## Why
 

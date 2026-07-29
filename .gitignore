@@ -3,6 +3,20 @@
 *.swp
 .idea/
 .vscode/
+.cursor/
+
+# Secrets / credentials (never commit)
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.key
+id_rsa
+id_rsa.*
+credentials.json
+secrets/
+**/secrets/
 
 # Server
 server/node_modules/
