@@ -2,6 +2,7 @@ name: fxrows
 description: Multi-currency converter with legal ECB default rates and optional BYO API key.
 publish_to: "none"
 version: 0.1.0+1
+license: MIT
 
 environment:
   sdk: ^3.11.5
