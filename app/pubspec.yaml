@@ -1,5 +1,5 @@
 name: fxrows
-description: Multi-currency converter with legal ECB default rates and optional BYO API key.
+description: Multi-currency converter with Frankfurter default rates and optional ECB/BYO providers.
 publish_to: "none"
 version: 0.1.0+1
 license: MIT

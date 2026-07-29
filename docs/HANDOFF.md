@@ -60,7 +60,7 @@ Tests: `cd app && flutter test` · `cd server && npm test`
 - Drag-reorder currency rows
 - History/charts (Frankfurter time series or ECB history)
 - Desktop polishing
-- Play Console: account + closed test + production (see [PLAY_STORE.md](PLAY_STORE.md))
+- Play Console: organization account → production (see [PLAY_STORE.md](PLAY_STORE.md); no 12/14 closed-test gate)
 
 ## Agent note
 

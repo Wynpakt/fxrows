@@ -1,9 +1,10 @@
 # Privacy Policy — fxrows
 
-**Last updated:** 2026-07-29  
+**Last updated:** 2026-07-30  
 **Developer:** wynpakt  
 **App package:** `com.wynpakt.fxrows`  
-**Contact:** Use the support email listed on the Google Play store listing (or open an issue on [github.com/Wynpakt/fxrows](https://github.com/Wynpakt/fxrows)).
+**Contact (privacy):** [privacy@wynpakt.com](mailto:privacy@wynpakt.com)  
+For general app support, use [fxrows@wynpakt.com](mailto:fxrows@wynpakt.com) or open an issue on [github.com/Wynpakt/fxrows](https://github.com/Wynpakt/fxrows).
 
 This policy describes how the **fxrows** multi-currency converter app handles information.
 

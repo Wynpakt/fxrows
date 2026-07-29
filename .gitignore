@@ -12,9 +12,14 @@
 *.pem
 *.p12
 *.key
+*.keystore
+*.jks
+**/key.properties
 id_rsa
 id_rsa.*
 credentials.json
+google-services.json
+GoogleService-Info.plist
 secrets/
 **/secrets/
 

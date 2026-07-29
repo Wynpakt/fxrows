@@ -24,7 +24,8 @@ the production submit (often a few days for a first app). No 14-day tester wait.
 | Feature graphic | [`store/feature-graphic-1024x500.png`](../store/feature-graphic-1024x500.png) |
 | AAB | `fxrows.aab` on [GitHub Releases](https://github.com/Wynpakt/fxrows/releases) (workflow `android-apk.yml`) |
 | Signing | GitHub Secrets / keystore — see [README](../README.md#signing-keystore-one-time-setup-via-secrets) |
-| Support email | Placeholder **`[SUPPORT_EMAIL]`** — set once and replace everywhere |
+| Support email | `fxrows@wynpakt.com` |
+| Privacy contact | `privacy@wynpakt.com` (see [`docs/privacy.md`](privacy.md)) |
 
 **Copy hygiene:** Do not claim settlement/transaction benchmarks. Describe
 Frankfurter default as aggregated / indicative rates — not as unmodified ECB
@@ -44,15 +45,15 @@ Done when all items below are true — then Phase A.
 3. Release keystore exists and secrets are set (or you create them in Phase A) —
    no upload without a signed AAB.
 4. Privacy URL is publicly reachable over HTTPS (or you host it in Phase A).
-5. Icon + feature graphic live under `store/`. **Screenshots still missing** →
-   in Phase A capture ≥2 phone screenshots (convert grid + settings).
+5. Icon + feature graphic live under `store/`. Phone screenshots committed:
+   `store/phone-screenshot-01.png` … `phone-screenshot-08.png`.
 
 ---
 
 ## Phase A — Blocking prep (first; parallel OK)
 
 **Done-when:** Keystore/secrets OK, privacy URL live, screenshots ready,
-`[SUPPORT_EMAIL]` chosen, listing copy below ready to paste.
+support contact `fxrows@wynpakt.com`, listing copy below ready to paste.
 
 ### A1. Signing keystore
 
@@ -76,17 +77,19 @@ Repo source: [`docs/privacy.md`](privacy.md). Use the same URL in the app
 
 ### A3. Screenshots
 
-On device or emulator, ≥2 phone screenshots:
+Committed under [`store/`](../store/):
 
-1. Convert grid (several currency rows visible)
-2. Settings (sources / BYO recognizable)
+| File | Typical use |
+|------|-------------|
+| [`phone-screenshot-01.png`](../store/phone-screenshot-01.png) … [`04.png`](../store/phone-screenshot-04.png) | Convert grid / UI |
+| [`phone-screenshot-05.png`](../store/phone-screenshot-05.png) … [`08.png`](../store/phone-screenshot-08.png) | Settings / sources |
 
-Optional path: `store/screenshots/` (not required in the repo).
+Play needs ≥2 phone screenshots; upload a suitable subset (convert + settings).
 
-### A4. Set support contact
+### A4. Support contact
 
-Replace **`[SUPPORT_EMAIL]`** everywhere with your real address (Play requires a
-contact email on the listing).
+Listing / general support: **`fxrows@wynpakt.com`**.  
+Privacy policy inquiries: **`privacy@wynpakt.com`** (see [privacy.md](privacy.md)).
 
 ### A5. Prepare listing copy
 
@@ -123,7 +126,7 @@ Note: Exchange rates are informational only. They are not settlement or
 transaction benchmarks and not a guarantee of bank or trade rates. The default
 source is Frankfurter (aggregated central-bank data).
 
-Support: [SUPPORT_EMAIL]
+Support: fxrows@wynpakt.com
 Source: https://github.com/Wynpakt/fxrows
 Privacy: see the privacy policy URL on the store listing
 ```
@@ -159,9 +162,9 @@ Package name is set on the **first AAB upload** and must be
 | Full description | From A5 |
 | App icon | `store/icon-512.png` |
 | Feature graphic | `store/feature-graphic-1024x500.png` |
-| Phone screenshots | ≥2 from A3 |
+| Phone screenshots | `store/phone-screenshot-01.png` … `08.png` (≥2 required) |
 | Application category | **Finance** (alternative: Tools) |
-| Contact email | `[SUPPORT_EMAIL]` |
+| Contact email | `fxrows@wynpakt.com` |
 | Website (optional) | `https://github.com/Wynpakt/fxrows` |
 | Privacy policy | URL from A2 |
 
@@ -222,8 +225,10 @@ the device when the user supplies their own key.
 Guideline: no account, no ads/analytics SDKs, no activity ping, and **no**
 contact with wynpakt servers. Default network: Frankfurter
 (`api.frankfurter.dev`, possibly Cloudflare). Advanced: ECB and/or BYO (ERA/OER).
-Do **not** claim “No data collected” if the app sends HTTPS to third parties
-(Frankfurter / ECB / BYO). BYO keys stay on the device.
+UI may also fetch **IBM Plex** from the **Google Fonts CDN** (`google_fonts`)
+on first use when not cached. Do **not** claim “No data collected” if the app
+sends HTTPS to third parties (Frankfurter / ECB / BYO / Google Fonts). BYO keys
+stay on the device.
 
 Suggestions (Console labels change occasionally — choose the closest match):
 
@@ -233,7 +238,7 @@ Suggestions (Console labels change occasionally — choose the closest match):
 | Account / name / email / location / photos | **Not collected** (no login) |
 | App activity / financial info as PII | Amounts/currencies local; no server accounts |
 | Device or other IDs for ads/analytics | **No** (no ads/analytics SDK) |
-| Data collected / shared — App functionality | Rate fetch: HTTPS to Frankfurter; optional ECB / BYO |
+| Data collected / shared — App functionality | Rate fetch: HTTPS to Frankfurter; optional ECB / BYO; optional Google Fonts CDN for IBM Plex |
 | Data encrypted in transit | **Yes** (HTTPS) |
 | Users can request deletion | N/A for cloud account — local: clear app data / uninstall |
 | Data sold | **No** |
@@ -246,7 +251,10 @@ Preferences, cached rates, and optional API keys stay on the device (keys in
 platform secure storage). By default the app downloads rates from
 api.frankfurter.dev (may use Cloudflare; standard request metadata may apply).
 Advanced: ECB direct (ecb.europa.eu) or BYO ExchangeRate-API / Open Exchange
-Rates. fxrows does not contact wynpakt servers and does not ping for analytics.
+Rates. The UI may download the IBM Plex font family from Google’s fonts CDN on
+first use when not already cached (standard request metadata may apply; falls
+back to system fonts if the fetch fails). fxrows does not contact wynpakt
+servers and does not ping for analytics.
 ```
 
 ### B9. App content — Content rating (IARC)
@@ -312,7 +320,7 @@ Could you install fxrows via the Google Play internal test?
 1. Open the link and join as a tester (Google account).
 2. Install the app from Play (not sideload).
 3. Please briefly check: convert grid (change an amount, several currencies) and
-   Settings (rate source). Feedback to [SUPPORT_EMAIL] or
+   Settings (rate source). Feedback to fxrows@wynpakt.com or
    https://github.com/Wynpakt/fxrows/issues
 
 Thanks!
