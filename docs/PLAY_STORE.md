@@ -225,10 +225,9 @@ the device when the user supplies their own key.
 Guideline: no account, no ads/analytics SDKs, no activity ping, and **no**
 contact with wynpakt servers. Default network: Frankfurter
 (`api.frankfurter.dev`, possibly Cloudflare). Advanced: ECB and/or BYO (ERA/OER).
-UI may also fetch **IBM Plex** from the **Google Fonts CDN** (`google_fonts`)
-on first use when not cached. Do **not** claim “No data collected” if the app
-sends HTTPS to third parties (Frankfurter / ECB / BYO / Google Fonts). BYO keys
-stay on the device.
+Fonts (IBM Plex) are bundled in the app; no Google Fonts CDN fetch.
+Do **not** claim “No data collected” if the app sends HTTPS to third parties
+(Frankfurter / ECB / BYO). BYO keys stay on the device.
 
 Suggestions (Console labels change occasionally — choose the closest match):
 
@@ -238,7 +237,7 @@ Suggestions (Console labels change occasionally — choose the closest match):
 | Account / name / email / location / photos | **Not collected** (no login) |
 | App activity / financial info as PII | Amounts/currencies local; no server accounts |
 | Device or other IDs for ads/analytics | **No** (no ads/analytics SDK) |
-| Data collected / shared — App functionality | Rate fetch: HTTPS to Frankfurter; optional ECB / BYO; optional Google Fonts CDN for IBM Plex |
+| Data collected / shared — App functionality | Rate fetch: HTTPS to Frankfurter; optional ECB / BYO |
 | Data encrypted in transit | **Yes** (HTTPS) |
 | Users can request deletion | N/A for cloud account — local: clear app data / uninstall |
 | Data sold | **No** |
@@ -251,10 +250,8 @@ Preferences, cached rates, and optional API keys stay on the device (keys in
 platform secure storage). By default the app downloads rates from
 api.frankfurter.dev (may use Cloudflare; standard request metadata may apply).
 Advanced: ECB direct (ecb.europa.eu) or BYO ExchangeRate-API / Open Exchange
-Rates. The UI may download the IBM Plex font family from Google’s fonts CDN on
-first use when not already cached (standard request metadata may apply; falls
-back to system fonts if the fetch fails). fxrows does not contact wynpakt
-servers and does not ping for analytics.
+Rates. UI fonts (IBM Plex) are bundled in the app binary. fxrows does not
+contact wynpakt servers and does not ping for analytics.
 ```
 
 ### B9. App content — Content rating (IARC)

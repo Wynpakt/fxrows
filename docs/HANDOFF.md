@@ -43,7 +43,7 @@ this file for the current product and technical baseline.
 
 | Area | Location | Status |
 |------|----------|--------|
-| Flutter app | `app/` | Grid, pivot, expression eval, settings; **Frankfurter** default + ECB/BYO advanced + cache |
+| Flutter app | `app/` | Grid, pivot, expression eval, settings; **Frankfurter** default + ECB/BYO advanced + cache; drag-reorder rows; bundled IBM Plex |
 | Aggregator (unwired) | `server/` | Optional Node ESM; Docker/GHCR — fallback candidate |
 | Docs | `docs/`, `README.md` | data-sources, privacy (Frankfurter + CF), HOSTING, Play |
 
@@ -57,7 +57,6 @@ Tests: `cd app && flutter test` · `cd server && npm test`
 
 ## Sensible next steps
 
-- Drag-reorder currency rows
 - History/charts (Frankfurter time series or ECB history)
 - Desktop polishing
 - Play Console: organization account → production (see [PLAY_STORE.md](PLAY_STORE.md); no 12/14 closed-test gate)

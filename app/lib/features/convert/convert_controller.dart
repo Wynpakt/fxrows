@@ -212,6 +212,25 @@ class ConvertController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Reorder visible currency rows. Does not recompute amounts.
+  void reorderCurrencies(int oldIndex, int newIndex) {
+    if (oldIndex < 0 ||
+        oldIndex >= currencies.length ||
+        newIndex < 0 ||
+        newIndex > currencies.length) {
+      return;
+    }
+    var target = newIndex;
+    if (oldIndex < target) target -= 1;
+    if (oldIndex == target) return;
+    final next = List<String>.of(currencies);
+    final code = next.removeAt(oldIndex);
+    next.insert(target, code);
+    currencies = next;
+    _settings.setVisibleCurrencies(currencies);
+    notifyListeners();
+  }
+
   void setEditing(String? code) {
     editingCode = code;
     notifyListeners();

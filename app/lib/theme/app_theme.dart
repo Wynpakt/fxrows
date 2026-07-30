@@ -1,32 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// Brand seed: deep forest green (see DESIGN.md).
 const Color kFxrowsSeed = Color(0xFF1B4D3E);
 
+const String kFontSans = 'IBM Plex Sans';
+const String kFontMono = 'IBM Plex Mono';
+
 TextTheme _fxrowsTextTheme(TextTheme base) {
-  try {
-    final sans = GoogleFonts.ibmPlexSansTextTheme(base);
-    final mono = GoogleFonts.ibmPlexMonoTextTheme(base);
-    return sans.copyWith(
-      headlineSmall: mono.headlineSmall?.copyWith(
-        fontWeight: FontWeight.w500,
-        fontFeatures: const [FontFeature.tabularFigures()],
-      ),
-      titleMedium: sans.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-      bodySmall: sans.bodySmall?.copyWith(height: 1.35),
-    );
-  } catch (_) {
-    // Offline / tests without bundled fonts: keep platform type, tabular amounts.
-    return base.copyWith(
-      headlineSmall: base.headlineSmall?.copyWith(
-        fontWeight: FontWeight.w500,
-        fontFeatures: const [FontFeature.tabularFigures()],
-      ),
-      titleMedium: base.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-      bodySmall: base.bodySmall?.copyWith(height: 1.35),
-    );
-  }
+  final sans = base.apply(fontFamily: kFontSans);
+  return sans.copyWith(
+    headlineSmall: sans.headlineSmall?.copyWith(
+      fontFamily: kFontMono,
+      fontWeight: FontWeight.w500,
+      fontFeatures: const [FontFeature.tabularFigures()],
+    ),
+    titleMedium: sans.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+    bodySmall: sans.bodySmall?.copyWith(height: 1.35),
+  );
 }
 
 ThemeData buildFxrowsTheme(Brightness brightness) {
@@ -38,6 +28,7 @@ ThemeData buildFxrowsTheme(Brightness brightness) {
     colorScheme: scheme,
     useMaterial3: true,
     brightness: brightness,
+    fontFamily: kFontSans,
   );
   final textTheme = _fxrowsTextTheme(base.textTheme);
 

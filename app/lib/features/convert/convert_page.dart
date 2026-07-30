@@ -296,10 +296,30 @@ class _ConvertPageState extends State<ConvertPage> {
               ],
             ),
           Expanded(
-            child: ListView.separated(
+            child: ReorderableListView.builder(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 88),
+              buildDefaultDragHandles: false,
               itemCount: c.currencies.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 8),
+              proxyDecorator: (child, index, animation) {
+                if (reduceMotion) return child;
+                return AnimatedBuilder(
+                  animation: animation,
+                  builder: (context, child) {
+                    final t = Curves.easeOut.transform(animation.value);
+                    return Material(
+                      elevation: 1 + t,
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                      child: child,
+                    );
+                  },
+                  child: child,
+                );
+              },
+              onReorder: (oldIndex, newIndex) {
+                HapticFeedback.selectionClick();
+                c.reorderCurrencies(oldIndex, newIndex);
+              },
               itemBuilder: (context, index) {
                 final code = c.currencies[index];
                 final field = _ensureField(code);
@@ -308,113 +328,131 @@ class _ConvertPageState extends State<ConvertPage> {
                 final active = c.editingCode == code;
                 final fill = theme.colorScheme.surfaceContainerHighest
                     .withValues(alpha: active ? 0.85 : 0.45);
-                return AnimatedContainer(
-                  duration: Duration(milliseconds: reduceMotion ? 0 : 180),
-                  curve: Curves.easeOut,
-                  decoration: BoxDecoration(
-                    color: fill,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: active
-                          ? theme.colorScheme.primary
-                          : theme.colorScheme.outlineVariant.withValues(
-                              alpha: 0.5,
+                return Padding(
+                  key: ValueKey(code),
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: AnimatedContainer(
+                    duration: Duration(milliseconds: reduceMotion ? 0 : 180),
+                    curve: Curves.easeOut,
+                    decoration: BoxDecoration(
+                      color: fill,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: active
+                            ? theme.colorScheme.primary
+                            : theme.colorScheme.outlineVariant.withValues(
+                                alpha: 0.5,
+                              ),
+                        width: active ? 1.5 : 1,
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 4,
+                      ),
+                      child: Row(
+                        children: [
+                          ReorderableDragStartListener(
+                            index: index,
+                            child: Semantics(
+                              label: 'Reorder $code',
+                              button: true,
+                              child: SizedBox(
+                                width: 44,
+                                height: 44,
+                                child: Icon(
+                                  Icons.drag_handle,
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
                             ),
-                      width: active ? 1.5 : 1,
-                    ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
-                    ),
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          width: 88,
-                          child: Semantics(
-                            label: 'Currency $code',
-                            child: Row(
-                              children: [
-                                if (flag.isNotEmpty) ...[
-                                  ExcludeSemantics(
+                          ),
+                          SizedBox(
+                            width: 88,
+                            child: Semantics(
+                              label: 'Currency $code',
+                              child: Row(
+                                children: [
+                                  if (flag.isNotEmpty) ...[
+                                    ExcludeSemantics(
+                                      child: Text(
+                                        flag,
+                                        style: const TextStyle(fontSize: 22),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                  ],
+                                  Flexible(
                                     child: Text(
-                                      flag,
-                                      style: const TextStyle(fontSize: 22),
+                                      code,
+                                      style: theme.textTheme.titleMedium,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
-                                  const SizedBox(width: 6),
                                 ],
-                                Flexible(
-                                  child: Text(
-                                    code,
-                                    style: theme.textTheme.titleMedium
-                                        ?.copyWith(
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Semantics(
+                              label: '$code amount',
+                              textField: true,
+                              child: TextField(
+                                controller: field,
+                                focusNode: focus,
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                  decimal: true,
+                                  signed: true,
+                                ),
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                    RegExp(r'[0-9+\-*/().,\s]'),
                                   ),
+                                ],
+                                decoration: const InputDecoration(
+                                  border: InputBorder.none,
+                                  hintText: '0 or 100+50',
                                 ),
-                              ],
+                                style: theme.textTheme.headlineSmall,
+                                onTap: () {
+                                  if (c.editingCode != code) {
+                                    c.setEditing(code);
+                                  }
+                                  field.selection = TextSelection(
+                                    baseOffset: 0,
+                                    extentOffset: field.text.length,
+                                  );
+                                },
+                                onChanged: (raw) => c.liveAmount(code, raw),
+                                onEditingComplete: () {
+                                  c.commitAmount(code, field.text);
+                                  c.setEditing(null);
+                                  focus.unfocus();
+                                },
+                                onSubmitted: (raw) {
+                                  c.commitAmount(code, raw);
+                                  c.setEditing(null);
+                                },
+                              ),
                             ),
                           ),
-                        ),
-                        Expanded(
-                          child: Semantics(
-                            label: '$code amount',
-                            textField: true,
-                            child: TextField(
-                              controller: field,
-                              focusNode: focus,
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                decimal: true,
-                                signed: true,
-                              ),
-                              inputFormatters: [
-                                FilteringTextInputFormatter.allow(
-                                  RegExp(r'[0-9+\-*/().,\s]'),
-                                ),
-                              ],
-                              decoration: const InputDecoration(
-                                border: InputBorder.none,
-                                hintText: '0 or 100+50',
-                              ),
-                              style: theme.textTheme.headlineSmall,
-                              onTap: () {
-                                if (c.editingCode != code) c.setEditing(code);
-                                field.selection = TextSelection(
-                                  baseOffset: 0,
-                                  extentOffset: field.text.length,
-                                );
-                              },
-                              onChanged: (raw) => c.liveAmount(code, raw),
-                              onEditingComplete: () {
-                                c.commitAmount(code, field.text);
-                                c.setEditing(null);
-                                focus.unfocus();
-                              },
-                              onSubmitted: (raw) {
-                                c.commitAmount(code, raw);
-                                c.setEditing(null);
-                              },
+                          if (c.isCustom(code))
+                            IconButton(
+                              tooltip: 'Edit custom rate',
+                              onPressed: () =>
+                                  _addCustomCurrency(existingCode: code),
+                              icon: const Icon(Icons.edit_outlined),
                             ),
-                          ),
-                        ),
-                        if (c.isCustom(code))
-                          IconButton(
-                            tooltip: 'Edit custom rate',
-                            onPressed: () =>
-                                _addCustomCurrency(existingCode: code),
-                            icon: const Icon(Icons.edit_outlined),
-                          ),
-                        if (c.currencies.length > 2)
-                          IconButton(
-                            tooltip: 'Remove',
-                            onPressed: () => c.removeCurrency(code),
-                            icon: const Icon(Icons.close),
-                          ),
-                      ],
+                          if (c.currencies.length > 2)
+                            IconButton(
+                              tooltip: 'Remove',
+                              onPressed: () => c.removeCurrency(code),
+                              icon: const Icon(Icons.close),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                 );

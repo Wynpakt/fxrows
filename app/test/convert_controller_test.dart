@@ -88,6 +88,41 @@ void main() {
       expect(c.amounts['EUR'], 100);
       c.dispose();
     });
+
+    test('reorderCurrencies moves row and persists order', () async {
+      final repo = _FakeRepo(next: RateSnapshot.dummy());
+      final s = settings();
+      final c = ConvertController(repository: repo, settings: s);
+      await c.init();
+      final before = List<String>.of(c.currencies);
+      expect(before.length, greaterThanOrEqualTo(3));
+      final eur = c.amounts['EUR'];
+      final usd = c.amounts['USD'];
+
+      // Move first item (index 0) to after index 2 → Flutter newIndex = 3.
+      c.reorderCurrencies(0, 3);
+      expect(c.currencies[0], before[1]);
+      expect(c.currencies[1], before[2]);
+      expect(c.currencies[2], before[0]);
+      expect(c.amounts['EUR'], eur);
+      expect(c.amounts['USD'], usd);
+
+      final persisted = await s.visibleCurrencies();
+      expect(persisted, c.currencies);
+      c.dispose();
+    });
+
+    test('reorderCurrencies no-op when indices unchanged', () async {
+      final repo = _FakeRepo(next: RateSnapshot.dummy());
+      final c = ConvertController(repository: repo, settings: settings());
+      await c.init();
+      final before = List<String>.of(c.currencies);
+      c.reorderCurrencies(1, 1);
+      expect(c.currencies, before);
+      c.reorderCurrencies(1, 2); // remove then insert at same slot
+      expect(c.currencies, before);
+      c.dispose();
+    });
   });
 
   group('humanizeError', () {

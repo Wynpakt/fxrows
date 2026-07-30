@@ -29,7 +29,8 @@ focus, selected settings row). Rarity is the point.
 
 ## Typography
 
-- **UI:** IBM Plex Sans (Regular 400, Medium 500, SemiBold 600)
+- **UI:** IBM Plex Sans (Regular 400, Medium 500, SemiBold 600), **bundled** in
+  `app/assets/fonts/` (no runtime CDN fetch)
 - **Amounts:** IBM Plex Mono with `FontFeature.tabularFigures()`
 - Product scale ~1.2 between steps; amounts use `headlineSmall` weight 500
 
@@ -44,7 +45,8 @@ slightly stronger surface tint. Card radius ≤12.
 
 ## Components
 
-- **Currency row:** code (semibold) + borderless amount field + optional actions
+- **Currency row:** drag handle (reorder) + code (semibold) + borderless amount
+  field + optional actions; order persists on device
 - **FAB:** add currency (primary)
 - **Error banner:** dismissible MaterialBanner + Retry; human copy only
 - **Status strip:** one compact line (source · as-of · count); legal detail in Settings

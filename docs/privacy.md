@@ -38,7 +38,8 @@ Depending on settings, the app may contact:
 1. **Frankfurter** (default) — HTTPS GET to `api.frankfurter.dev` (open-source central-bank rate aggregation). The public host may run behind **Cloudflare**, which may see standard request metadata (e.g. IP, timestamp, user-agent). Frankfurter states the API itself does not collect personal data.
 2. **European Central Bank** — only if you choose **ECB (direct)** under Advanced. HTTPS GET of the public eurofxref daily XML (`ecb.europa.eu`).
 3. **ExchangeRate-API** or **Open Exchange Rates** — only if you choose that provider and enter your own key/App ID. Requests go **directly** from your device; those providers’ own privacy policies and terms apply.
-4. **Google Fonts CDN** — the UI may download the **IBM Plex** font family from Google’s fonts CDN on first use when not already cached; Google may see standard request metadata. If that fetch fails, the app falls back to system fonts.
+
+Fonts (IBM Plex) are bundled in the app binary and are not downloaded at runtime.
 
 ### Permissions
 
