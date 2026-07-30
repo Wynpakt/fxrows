@@ -99,8 +99,8 @@ void main() {
       final eur = c.amounts['EUR'];
       final usd = c.amounts['USD'];
 
-      // Move first item (index 0) to after index 2 → Flutter newIndex = 3.
-      c.reorderCurrencies(0, 3);
+      // Move first item to index 2 (onReorderItem destination after removal).
+      c.reorderCurrencies(0, 2);
       expect(c.currencies[0], before[1]);
       expect(c.currencies[1], before[2]);
       expect(c.currencies[2], before[0]);
@@ -118,8 +118,6 @@ void main() {
       await c.init();
       final before = List<String>.of(c.currencies);
       c.reorderCurrencies(1, 1);
-      expect(c.currencies, before);
-      c.reorderCurrencies(1, 2); // remove then insert at same slot
       expect(c.currencies, before);
       c.dispose();
     });

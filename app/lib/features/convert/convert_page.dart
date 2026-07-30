@@ -316,7 +316,7 @@ class _ConvertPageState extends State<ConvertPage> {
                   child: child,
                 );
               },
-              onReorder: (oldIndex, newIndex) {
+              onReorderItem: (oldIndex, newIndex) {
                 HapticFeedback.selectionClick();
                 c.reorderCurrencies(oldIndex, newIndex);
               },

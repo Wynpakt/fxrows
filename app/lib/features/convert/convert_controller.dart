@@ -213,19 +213,20 @@ class ConvertController extends ChangeNotifier {
   }
 
   /// Reorder visible currency rows. Does not recompute amounts.
+  ///
+  /// [newIndex] is the destination after removal (as passed by
+  /// [ReorderableListView.onReorderItem]).
   void reorderCurrencies(int oldIndex, int newIndex) {
     if (oldIndex < 0 ||
         oldIndex >= currencies.length ||
         newIndex < 0 ||
-        newIndex > currencies.length) {
+        newIndex >= currencies.length ||
+        oldIndex == newIndex) {
       return;
     }
-    var target = newIndex;
-    if (oldIndex < target) target -= 1;
-    if (oldIndex == target) return;
     final next = List<String>.of(currencies);
     final code = next.removeAt(oldIndex);
-    next.insert(target, code);
+    next.insert(newIndex, code);
     currencies = next;
     _settings.setVisibleCurrencies(currencies);
     notifyListeners();
