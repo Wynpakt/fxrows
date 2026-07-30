@@ -6,6 +6,13 @@ Product-register Material 3 app. One brand accent (deep forest green), IBM Plex
 for UI and tabular amounts, dense currency rows. No marketing hero, no
 decorative card grids.
 
+## Publisher
+
+**Wynpakt LLC** — House of Brands. Visual identity is product-local (this file).
+Shared publisher rules (attribution, craft bar, PRODUCT.md/DESIGN.md convention):
+ki-os skill `wynpakt-design` / `context/wynpakt-design.md`.
+Do not apply Wynpakt.com Inter/teal tokens here.
+
 ## Colors
 
 | Token | Light | Dark | Role |
