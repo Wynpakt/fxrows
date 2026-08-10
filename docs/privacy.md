@@ -1,6 +1,6 @@
 # Privacy Policy — fxrows
 
-**Last updated:** 2026-07-30  
+**Last updated:** 2026-08-10  
 **Developer:** wynpakt  
 **App package:** `com.wynpakt.fxrows`  
 **Contact (privacy):** [privacy@wynpakt.com](mailto:privacy@wynpakt.com)  
@@ -44,6 +44,10 @@ Fonts (IBM Plex) are bundled in the app binary and are not downloaded at runtime
 ### Permissions
 
 Android: **Internet** — required to download exchange rates.
+
+iOS: no special permission prompt strings for photos, location, microphone, or
+tracking. Networking uses standard HTTPS. Optional BYO API keys are stored in
+the platform Keychain / secure storage on device.
 
 ### Children’s privacy
 

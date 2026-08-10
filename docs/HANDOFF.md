@@ -6,7 +6,8 @@ this file for the current product and technical baseline.
 
 **Product name:** **fxrows** · Android/iOS id: `com.wynpakt.fxrows`  
 **Repo:** https://github.com/Wynpakt/fxrows  
-**Play readiness:** `docs/PLAY_STORE.md`
+**Play readiness:** `docs/PLAY_STORE.md`  
+**App Store readiness:** `docs/APP_STORE.md`
 
 ## Product decisions
 
@@ -45,7 +46,7 @@ this file for the current product and technical baseline.
 |------|----------|--------|
 | Flutter app | `app/` | Grid, pivot, expression eval, settings; **Frankfurter** default + ECB/BYO advanced + cache; drag-reorder rows; bundled IBM Plex |
 | Aggregator (unwired) | `server/` | Optional Node ESM; Docker/GHCR — fallback candidate |
-| Docs | `docs/`, `README.md` | data-sources, privacy (Frankfurter + CF), HOSTING, Play |
+| Docs | `docs/`, `README.md` | data-sources, privacy (Frankfurter + CF), HOSTING, Play, App Store |
 
 ## Start
 
@@ -60,6 +61,7 @@ Tests: `cd app && flutter test` · `cd server && npm test`
 - History/charts (Frankfurter time series or ECB history)
 - Desktop polishing
 - Play Console: organization account → production (see [PLAY_STORE.md](PLAY_STORE.md); no 12/14 closed-test gate)
+- App Store: Wynpakt org enrollment → first iPhone submit (see [APP_STORE.md](APP_STORE.md); manual Mac + Xcode)
 
 ## Agent note
 

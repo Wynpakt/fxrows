@@ -123,6 +123,12 @@ debug keystore when no release credentials are present.
 See [docs/PLAY_STORE.md](docs/PLAY_STORE.md) for the Console checklist.
 Privacy policy: [docs/privacy.md](docs/privacy.md).
 
+## App Store
+
+See [docs/APP_STORE.md](docs/APP_STORE.md) for the App Store Connect checklist
+(Wynpakt organization membership, manual Mac + Xcode IPA upload).
+Privacy policy: [docs/privacy.md](docs/privacy.md).
+
 ## Session handoff
 
 Planning/implementation context for agents and future you: [docs/HANDOFF.md](docs/HANDOFF.md).
