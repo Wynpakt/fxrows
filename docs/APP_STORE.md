@@ -52,7 +52,9 @@ Done when all items below are true — then Phase A.
 1. [Apple Developer](https://developer.apple.com/account) → **Organization**
    membership for **Wynpakt** is **Active** (D-U-N-S + binding authority complete).
 2. [App Store Connect](https://appstoreconnect.apple.com/) Agreements: Account
-   Holder accepted current **Paid / Developer** agreements needed for free apps.
+   Holder accepted every agreement ASC currently marks as **required** for
+   distribution (Developer Program License Agreement / free-apps terms as shown).
+   The **Paid Apps Agreement** is only needed if you later sell the app or add IAP.
 3. Mac with recent **Xcode** matching your Flutter iOS toolchain; Flutter
    `doctor` clean for iOS.
 4. Privacy URL reachable over HTTPS (same as Play).
@@ -104,12 +106,13 @@ Committed under [`store/ios/`](../store/ios/):
 
 | File | Size | Typical use |
 |------|------|-------------|
-| `iphone-6.9-01.png` … `04.png` | 1290×2796 | Convert grid / UI |
-| `iphone-6.9-05.png` … `08.png` | 1290×2796 | Settings / sources |
+| `iphone-6.9-01.png`, `05.png` | 1290×2796 | Settings / rate sources |
+| `iphone-6.9-02.png` … `04.png`, `06.png` … `08.png` | 1290×2796 | Convert grid and related UI |
+
+Upload a mix of convert + settings (≥2 required; recommend ≥4).
 
 Apple requires the **highest iPhone display class** you support (6.9″ preferred;
 see [screenshot specifications](https://developer.apple.com/help/app-store-connect/reference/screenshot-specifications)).
-Upload ≥2; Recommend ≥4 (grid + settings).
 
 Optional before submit: re-capture from an iOS Simulator on Mac if you want native
 status-bar chrome; sizes must still match a listed 6.9″ class.
@@ -249,7 +252,9 @@ analytics SDKs. Privacy: https://wynpakt.com/app/fxrows/privacy/
 
 ### B2. Pricing
 
-**Free.** No Paid Apps agreement required solely for a free app without IAP.
+**Free.** The **Paid Apps Agreement** (banking/tax) is **not** required for a
+free app without IAP. Keep the Developer Program / free-distribution agreements
+from Phase 0 accepted.
 
 ### B3. Category
 
