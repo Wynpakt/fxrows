@@ -52,18 +52,17 @@ class ConvertController extends ChangeNotifier {
       amounts.putIfAbsent(c, () => c == currencies.first ? 100 : 0);
     }
 
-    // Offline-first: paint from disk cache before any network call.
+    // Offline-first: paint from disk cache. Caller starts network refresh
+    // after the UI is ready so cold start is not blocked on HTTP.
     final cached = await _repository.loadCached(providerId);
     if (cached != null) {
       _applySnapshot(cached, fromNetwork: false);
       notifyListeners();
     }
-
-    await refreshRates(force: false);
   }
 
   /// [force] true = manual refresh (bypass smart/throttle policy).
-  Future<void> refreshRates({bool force = true}) async {
+  Future<void> refreshRates({bool force = false}) async {
     loading = true;
     errorMessage = null;
     notifyListeners();

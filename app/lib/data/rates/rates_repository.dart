@@ -78,8 +78,9 @@ class RatesRepository {
       await _cache.save(providerId, next);
       return next;
     } catch (_) {
-      // Auto-refresh: keep serving disk cache. Manual force: surface the error.
-      if (!forceRefresh && cached != null) return cached;
+      // Prefer disk cache over failure (including manual force) so offline
+      // and flaky networks keep usable rates. No cache → surface the error.
+      if (cached != null) return cached;
       rethrow;
     } finally {
       if (owned) client.close();
