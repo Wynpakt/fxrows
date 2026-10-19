@@ -254,7 +254,8 @@ class _ConvertPageState extends State<ConvertPage> {
         actions: [
           IconButton(
             tooltip: 'Refresh rates',
-            onPressed: c.loading ? null : c.refreshRates,
+            onPressed:
+                c.loading ? null : () => c.refreshRates(force: true),
             icon: c.loading
                 ? const SizedBox(
                     width: 20,
@@ -290,7 +291,7 @@ class _ConvertPageState extends State<ConvertPage> {
                   child: const Text('Dismiss'),
                 ),
                 TextButton(
-                  onPressed: c.refreshRates,
+                  onPressed: () => c.refreshRates(force: true),
                   child: const Text('Retry'),
                 ),
               ],

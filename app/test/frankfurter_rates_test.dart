@@ -57,40 +57,55 @@ void main() {
       );
     }
 
-    test('refreshes when asOf is before today UTC', () {
+    // 2026-07-29 is a Wednesday; after ~16:15 CET expect asOf == that day.
+    test('refreshes when asOf is before expected business day', () {
       expect(
         shouldRefreshDailyRates(
           cached: snap(
             asOf: '2026-07-28',
             fetchedAt: DateTime.utc(2026, 7, 28, 18),
           ),
-          nowUtc: DateTime.utc(2026, 7, 29, 12),
+          nowUtc: DateTime.utc(2026, 7, 29, 16),
         ),
         isTrue,
       );
     });
 
-    test('keeps cache when asOf is today and fresh', () {
+    test('keeps cache when asOf matches expected day and fresh', () {
       expect(
         shouldRefreshDailyRates(
           cached: snap(
             asOf: '2026-07-29',
             fetchedAt: DateTime.utc(2026, 7, 29, 8),
           ),
-          nowUtc: DateTime.utc(2026, 7, 29, 12),
+          nowUtc: DateTime.utc(2026, 7, 29, 16),
         ),
         isFalse,
       );
     });
 
-    test('refreshes after maxAge even if asOf is today', () {
+    test('weekend keeps Friday snapshot without network', () {
+      // 2026-07-24 Friday asOf; fetched Sat evening so age < 20h on Sunday.
+      expect(
+        shouldRefreshDailyRates(
+          cached: snap(
+            asOf: '2026-07-24',
+            fetchedAt: DateTime.utc(2026, 7, 25, 18),
+          ),
+          nowUtc: DateTime.utc(2026, 7, 26, 12),
+        ),
+        isFalse,
+      );
+    });
+
+    test('refreshes after maxAge even if asOf is current', () {
       expect(
         shouldRefreshDailyRates(
           cached: snap(
             asOf: '2026-07-29',
             fetchedAt: DateTime.utc(2026, 7, 28, 10),
           ),
-          nowUtc: DateTime.utc(2026, 7, 29, 12),
+          nowUtc: DateTime.utc(2026, 7, 29, 16),
         ),
         isTrue,
       );

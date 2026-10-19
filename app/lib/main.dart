@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'features/convert/convert_controller.dart';
@@ -32,7 +34,9 @@ class _FxrowsAppState extends State<FxrowsApp> {
 
   Future<void> _boot() async {
     await _controller.init();
-    if (mounted) setState(() => _ready = true);
+    if (!mounted) return;
+    setState(() => _ready = true);
+    unawaited(_controller.refreshRates(force: false));
   }
 
   @override
@@ -55,7 +59,7 @@ class _FxrowsAppState extends State<FxrowsApp> {
               ),
         '/settings': (_) => SettingsPage(
               settings: _settings,
-              onChanged: () => _controller.refreshRates(),
+              onChanged: () => _controller.refreshRates(force: false),
             ),
       },
     );

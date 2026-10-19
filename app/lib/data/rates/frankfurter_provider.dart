@@ -27,7 +27,7 @@ class FrankfurterProvider implements RatesProvider {
             Uri.parse(url),
             headers: const {'Accept': 'application/json'},
           )
-          .timeout(const Duration(seconds: 30));
+          .timeout(const Duration(seconds: 8));
     } catch (_) {
       throw RatesException(
         'Cannot reach Frankfurter rate API.$networkPermissionHint',

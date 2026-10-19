@@ -100,7 +100,8 @@ bool shouldRefreshThrottled({
 }
 
 /// Frankfurter (and similar daily CB aggregates): refresh when [asOf] lags
-/// today's UTC calendar date, or when the cache is older than [maxAge].
+/// the expected business-day publish date, or when the cache is older than
+/// [maxAge]. Weekends keep Friday's snapshot without forcing a network hit.
 bool shouldRefreshDailyRates({
   required RateSnapshot? cached,
   required DateTime nowUtc,
@@ -114,9 +115,11 @@ bool shouldRefreshDailyRates({
   if (asOf == null) return true;
 
   final now = nowUtc.toUtc();
-  final today = DateTime.utc(now.year, now.month, now.day);
-  final asOfDate = DateTime.utc(asOf.year, asOf.month, asOf.day);
-  if (asOfDate.isBefore(today)) return true;
+  final nowCet = toCentralEuropean(now);
+  final expected = expectedEcbAsOfDate(nowCet);
+  final asOfDate = DateTime(asOf.year, asOf.month, asOf.day);
+  final expectedDate = DateTime(expected.year, expected.month, expected.day);
+  if (asOfDate.isBefore(expectedDate)) return true;
 
   return now.difference(cached.fetchedAt.toUtc()) >= maxAge;
 }
